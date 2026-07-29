@@ -15,7 +15,8 @@
     "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:127.0.0.1:5173 && electron .\"",
     "electron:build": "npm run build && electron-builder",
     "electron:build:mac": "npm run build && electron-builder --mac",
-    "electron:build:win": "npm run build && electron-builder --win"
+    "electron:build:win": "npm run build && electron-builder --win",
+    "release": "bash scripts/release.sh"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",
