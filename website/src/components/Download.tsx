@@ -30,8 +30,8 @@ const TARGETS: Target[] = [
   {
     os: 'Windows',
     detail: 'Windows 10 이상 (64bit)',
-    url: null,
-    label: '준비 중',
+    url: `${RELEASE_BASE}/CarrotFarm-Setup-${VERSION}.exe`,
+    label: '.exe 받기',
   },
 ]
 
