@@ -1,0 +1,19 @@
+// 한글 지원 픽셀 폰트 (게임 본체와 동일)
+@font-face {
+  font-family: 'Galmuri11';
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('Galmuri11'),
+    local('Galmuri11 Regular'),
+    url('../../node_modules/galmuri/dist/Galmuri11.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Galmuri11';
+  font-weight: 700;
+  font-display: swap;
+  src:
+    local('Galmuri11 Bold'),
+    url('../../node_modules/galmuri/dist/Galmuri11-Bold.woff2') format('woff2');
+}

@@ -1,0 +1,20 @@
+// 필요한 픽셀 폰트만 직접 로드 (galmuri.css 전체는 모든 계열 ttf까지 번들되어 무거움)
+@font-face {
+  font-family: 'Galmuri11';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src:
+    local('Galmuri11 Regular'),
+    url('../../node_modules/galmuri/dist/Galmuri11.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Galmuri11';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src:
+    local('Galmuri11 Bold'),
+    url('../../node_modules/galmuri/dist/Galmuri11-Bold.woff2') format('woff2');
+}

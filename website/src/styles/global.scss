@@ -1,0 +1,32 @@
+@use './variables' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    linear-gradient(180deg, $color-bg 0%, $color-bg-deep 100%);
+  color: $color-cream;
+
+  // 도트 테마: 픽셀 폰트
+  font-family: 'Galmuri11', 'DungGeunMo', monospace;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+// 도트 그림은 확대해도 또렷하게
+img {
+  image-rendering: pixelated;
+}
+
+::selection {
+  background: $color-orange;
+  color: #fff;
+}

@@ -1,0 +1,165 @@
+@use './variables' as *;
+
+// Hud 와 동일한 계단 노치 (픽셀 라운딩)
+$notch: polygon(
+  0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0,
+  calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px,
+  calc(100% - 4px) 8px, 100% 8px,
+  100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px),
+  calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px),
+  calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px),
+  4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px)
+);
+
+.market {
+  position: absolute;
+  inset: 0;
+  z-index: $z-hud + 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  pointer-events: auto;
+
+  &.is-closing {
+    pointer-events: none;
+  }
+
+  &__panel {
+    position: relative;
+    width: 320px;
+    padding: 22px 22px 18px;
+    background: #fffdf7;
+    clip-path: $notch;
+    color: #43382e;
+    text-align: center;
+    transform-origin: center;
+    animation: popIn 0.26s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+
+    &.is-closing {
+      animation: popOut 0.2s ease-in both;
+    }
+
+    // 은은한 상단 하이라이트
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      clip-path: $notch;
+      box-shadow:
+        inset 0 3px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -4px 0 rgba(0, 0, 0, 0.06);
+      pointer-events: none;
+    }
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  &__ticon {
+    width: 22px;
+    height: 22px;
+    image-rendering: pixelated;
+  }
+
+  &__price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 10px;
+
+    &-num {
+      font-size: 30px;
+      color: #e8590c;
+    }
+    &-unit {
+      font-size: 12px;
+      color: #8a7a68;
+    }
+  }
+
+  &__dir {
+    font-size: 16px;
+    margin-left: 4px;
+    &--up {
+      color: #2fa84a;
+    }
+    &--down {
+      color: #e03131;
+    }
+    &--flat {
+      color: #9a8a76;
+    }
+  }
+
+  &__rows {
+    margin-top: 6px;
+    margin-bottom: 14px;
+  }
+
+  &__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding: 3px 4px;
+
+    &--total {
+      color: #e8590c;
+      font-size: 15px;
+    }
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  &__sell,
+  &__close {
+    flex: 1;
+    padding: 11px 0;
+    font-family: inherit;
+    font-size: 15px;
+    color: #fff;
+    border: none;
+    border-radius: 0;
+    clip-path: $notch;
+    cursor: pointer;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.28);
+  }
+
+  &__sell {
+    background: #e8590c;
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -4px 0 rgba(0, 0, 0, 0.2);
+
+    &:active {
+      box-shadow: inset 0 3px 0 rgba(0, 0, 0, 0.2);
+      transform: translateY(1px);
+    }
+    &:disabled {
+      background: #cbb99f;
+      cursor: default;
+      text-shadow: none;
+    }
+  }
+
+  &__close {
+    background: #a58c6a;
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+}

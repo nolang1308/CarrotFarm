@@ -1,0 +1,33 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# build
+dist
+dist-ssr
+release
+
+# logs
+logs
+*.log
+npm-debug.log*
+firebase-debug.log
+
+# env / secrets
+.env
+.env.local
+.env.*.local
+
+# editor
+.idea
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+
+# firebase
+.firebase
+
+# build cache
+*.tsbuildinfo
+dist-tsnode

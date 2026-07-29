@@ -1,0 +1,10 @@
+@use './variables' as *;
+
+.game-scene {
+  position: absolute;
+  inset: 0;
+  z-index: $z-canvas;
+
+  // 위젯 모드: 배경 투명 (바탕화면이 비침)
+  background: transparent;
+}

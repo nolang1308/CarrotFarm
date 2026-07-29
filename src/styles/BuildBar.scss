@@ -1,0 +1,44 @@
+@use './variables' as *;
+
+$notch: polygon(
+  0 6px, 3px 6px, 3px 3px, 6px 3px, 6px 0,
+  calc(100% - 6px) 0, calc(100% - 6px) 3px, calc(100% - 3px) 3px,
+  calc(100% - 3px) 6px, 100% 6px,
+  100% calc(100% - 6px), calc(100% - 3px) calc(100% - 6px),
+  calc(100% - 3px) calc(100% - 3px), calc(100% - 6px) calc(100% - 3px),
+  calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 3px),
+  3px calc(100% - 3px), 3px calc(100% - 6px), 0 calc(100% - 6px)
+);
+
+.buildbar {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  z-index: $z-hud + 6;
+  display: flex;
+  justify-content: center; // 화면 중앙 상단
+  pointer-events: none;
+
+  &__done {
+    pointer-events: auto;
+    padding: 9px 20px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #fff;
+    background: #5bbe4e;
+    border: none;
+    clip-path: $notch;
+    cursor: pointer;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+    transform-origin: center;
+    animation: popIn 0.2s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+}

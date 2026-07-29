@@ -1,0 +1,23 @@
+// ===== 색 (게임 본체 팔레트와 동일) =====
+$color-bg: #241a10; // 따뜻한 어두운 갈색 배경
+$color-bg-deep: #1a120a;
+$color-cream: #fffdf7; // 패널
+$color-text: #43382e;
+$color-text-dim: #8a7a68;
+$color-orange: #ff922b; // carrot orange
+$color-orange-dark: #e8590c;
+$color-brown: #7a5320;
+$color-grass: #7cb342;
+$color-grass-dark: #5e9331;
+$color-yellow: #ffd873;
+
+// ===== 게임 팝업과 동일한 계단 노치 (픽셀 라운딩) =====
+$notch: polygon(
+  0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0,
+  calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px,
+  calc(100% - 4px) 8px, 100% 8px,
+  100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px),
+  calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px),
+  calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px),
+  4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px)
+);

@@ -1,0 +1,27 @@
+@use './variables' as *;
+
+.footer {
+  width: 100vw;
+  margin-top: auto;
+
+  // 픽셀 잔디 띠 (코드로 그린 반복 패턴)
+  &__grass {
+    height: 16px;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        $color-grass 0 8px,
+        $color-grass-dark 8px 16px
+      );
+    image-rendering: pixelated;
+    box-shadow: 0 -4px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  &__text {
+    padding: 18px 0 22px;
+    text-align: center;
+    font-size: 11px;
+    color: $color-text-dim;
+    background: $color-bg-deep;
+  }
+}

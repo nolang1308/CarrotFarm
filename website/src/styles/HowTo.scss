@@ -1,0 +1,53 @@
+@use './variables' as *;
+
+.howto {
+  width: 100%;
+  max-width: 560px;
+  padding: 40px 0;
+  text-align: center;
+
+  &__heading {
+    margin-bottom: 22px;
+    font-size: 26px;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  &__list {
+    list-style: none;
+    background: $color-cream;
+    clip-path: $notch;
+    padding: 18px 22px;
+    color: $color-text;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 2px;
+
+    & + & {
+      border-top: 2px dashed rgba(122, 83, 32, 0.25);
+    }
+  }
+
+  &__input {
+    padding: 5px 10px;
+    font-size: 13px;
+    color: $color-cream;
+    background: $color-brown;
+    box-shadow: 2px 2px 0 rgba(46, 32, 16, 0.3);
+    white-space: nowrap;
+  }
+
+  &__action {
+    font-size: 14px;
+  }
+
+  &__note {
+    margin-top: 14px;
+    font-size: 12px;
+    color: $color-text-dim;
+  }
+}

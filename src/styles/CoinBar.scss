@@ -1,0 +1,22 @@
+// 지붕 위 상시 코인 표시 (drei Html center 앵커 기준)
+.coinbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  background: #fffdf7;
+  border: 2px solid #7a5320;
+  font-size: 15px;
+  color: #43382e;
+  // 돈이 아무리 많아도 전부 표시 (줄바꿈·말줄임 없음)
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 rgba(46, 32, 16, 0.3);
+  pointer-events: none;
+
+  img {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    image-rendering: pixelated;
+  }
+}

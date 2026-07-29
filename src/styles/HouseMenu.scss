@@ -1,0 +1,142 @@
+// 집에 앵커링된 메뉴 (drei Html center 기준). grid: 위=스탯 / 아래=[시장 · 집 · 상점]
+.housemenu {
+  display: grid;
+  grid-template-columns: auto 104px auto; // 가운데 칸(집) 비움
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'stats stats stats'
+    'market mid shop';
+  align-items: center;
+  justify-items: center;
+  row-gap: 14px;
+  pointer-events: none;
+
+  // ===== 위: 보유 자산 =====
+  &__stats {
+    grid-area: stats;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    max-width: 280px;
+    animation: itemIn 0.3s cubic-bezier(0.2, 0.85, 0.35, 1.2) both;
+    animation-delay: 0.02s;
+    transform-origin: center bottom;
+  }
+
+  &__chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    background: #fffdf7;
+    border: 2px solid #7a5320;
+    font-size: 15px;
+    color: #43382e;
+    white-space: nowrap;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 2px 2px 0 rgba(46, 32, 16, 0.3);
+
+    img {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      image-rendering: pixelated;
+    }
+  }
+
+  // 자산 칩 줄 끝의 로그아웃 버튼 (칩과 같은 크기감, 누를 수 있게)
+  &__logout {
+    padding: 6px 11px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #fffdf7;
+    background: #a58c6a;
+    border: 2px solid #7a5320;
+    border-radius: 0;
+    white-space: nowrap;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 2px 2px 0 rgba(46, 32, 16, 0.3);
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+
+    &:hover {
+      filter: brightness(1.08);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 1px 1px 0 rgba(46, 32, 16, 0.3);
+    }
+  }
+
+  // ===== 좌/우 버튼 =====
+  &__side {
+    display: flex;
+
+    &--left {
+      grid-area: market;
+      .special {
+        animation-delay: 0.08s;
+      }
+    }
+    &--right {
+      grid-area: shop;
+      .special {
+        animation-delay: 0.14s;
+      }
+    }
+  }
+
+  &.is-closing {
+    .housemenu__stats,
+    .special {
+      animation: popOut 0.18s ease-in both;
+    }
+  }
+}
+
+// ===== 정사각형 특별 버튼 (시장/상점) — 프레임까지 완전 도트 =====
+.special {
+  width: 78px;
+  height: 78px;
+  padding: 10px 0 6px;
+  border: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  cursor: pointer;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  transform-origin: center bottom;
+  animation: itemIn 0.3s cubic-bezier(0.2, 0.85, 0.35, 1.2) both;
+
+  &__icon {
+    width: 34px;
+    height: 34px;
+    image-rendering: pixelated;
+  }
+
+  &__label {
+    font-family: inherit;
+    font-size: 12px;
+    color: #3a2a12;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+  }
+
+  &:hover {
+    filter: brightness(1.06);
+  }
+
+  &:active {
+    filter: brightness(0.92);
+  }
+}
