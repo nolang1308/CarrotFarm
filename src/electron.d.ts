@@ -11,6 +11,8 @@ declare global {
       getAutoLaunch: () => Promise<boolean>
       /** 자동 시작 설정. 적용된 값을 반환 */
       setAutoLaunch: (enable: boolean) => Promise<boolean>
+      /** 앱 완전 종료 */
+      quitApp: () => void
     }
   }
 }

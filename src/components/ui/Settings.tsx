@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useGameStore } from '../../store/gameStore'
+import { snapshotFarm, useGameStore } from '../../store/gameStore'
 import { useAuthStore } from '../../store/authStore'
+import { saveFarm } from '../../firebase/farmSync'
 import { useModalAnim } from '../../hooks/useModalAnim'
 import '../../styles/Settings.scss'
 
@@ -24,6 +25,20 @@ export default function Settings() {
     if (autoLaunch == null) return
     const applied = await window.electronAPI!.setAutoLaunch(!autoLaunch)
     setAutoLaunch(applied)
+  }
+
+  // 종료 전에 밀린 농장 저장을 먼저 끝낸다 (디바운스 대기분 유실 방지)
+  const quitApp = async () => {
+    const user = useAuthStore.getState().user
+    const game = useGameStore.getState()
+    if (user && game.hydrated) {
+      try {
+        await saveFarm(user.uid, snapshotFarm(game))
+      } catch (err) {
+        console.error('종료 전 저장 실패:', err)
+      }
+    }
+    window.electronAPI?.quitApp()
   }
 
   return (
@@ -63,6 +78,22 @@ export default function Settings() {
             로그아웃
           </button>
         </div>
+
+        {window.electronAPI && (
+          <div className="settings__row">
+            <div className="settings__label">
+              앱 종료
+              <span className="settings__hint">위젯을 완전히 닫아요</span>
+            </div>
+            <button
+              type="button"
+              className="settings__quit"
+              onClick={() => quitApp()}
+            >
+              종료
+            </button>
+          </div>
+        )}
 
         <button type="button" className="settings__close" onClick={toggle}>
           닫기

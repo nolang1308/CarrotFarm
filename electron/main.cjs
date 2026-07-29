@@ -108,6 +108,11 @@ ipcMain.on('window-drag-move', (e, { dx, dy }) => {
   win.setPosition(dragOrigin.x + dx, dragOrigin.y + dy)
 })
 
+// 렌더러의 종료 요청 (설정 모달의 종료 버튼)
+ipcMain.on('quit-app', () => {
+  app.quit()
+})
+
 // ===== 자동 시작 (컴퓨터 켜면 앱도 실행) =====
 // 개발 실행(app.isPackaged=false)에서는 개발용 Electron 바이너리가 OS 로그인
 // 항목에 등록되면 안 되므로, 메모리 상태로만 토글을 흉내낸다 (UI 확인용).

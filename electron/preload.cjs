@@ -17,4 +17,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // 자동 시작 (로그인 시 앱 실행) 조회/설정
   getAutoLaunch: () => ipcRenderer.invoke('get-auto-launch'),
   setAutoLaunch: (enable) => ipcRenderer.invoke('set-auto-launch', enable),
+  // 앱 종료
+  quitApp: () => ipcRenderer.send('quit-app'),
 })
