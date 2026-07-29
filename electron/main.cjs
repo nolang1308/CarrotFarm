@@ -108,6 +108,18 @@ ipcMain.on('window-drag-move', (e, { dx, dy }) => {
   win.setPosition(dragOrigin.x + dx, dragOrigin.y + dy)
 })
 
+// ===== 자동 시작 (컴퓨터 켜면 앱도 실행) =====
+ipcMain.handle('get-auto-launch', () => {
+  if (!app.isPackaged) return false // 개발 중엔 항상 꺼짐 취급
+  return app.getLoginItemSettings().openAtLogin
+})
+
+ipcMain.handle('set-auto-launch', (_e, enable) => {
+  if (!app.isPackaged) return false
+  app.setLoginItemSettings({ openAtLogin: Boolean(enable) })
+  return app.getLoginItemSettings().openAtLogin
+})
+
 // 렌더러가 계산한 밭 크기에 맞춰 창을 리사이즈 (중심 유지)
 ipcMain.on('resize-window', (e, { width, height }) => {
   const win = BrowserWindow.fromWebContents(e.sender)

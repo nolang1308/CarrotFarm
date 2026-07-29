@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
 import { useAuthStore } from '../../store/authStore'
 import {
@@ -22,6 +23,17 @@ export default function HouseMenu({ closing }: { closing: boolean }) {
   const toggleShop = useGameStore((s) => s.toggleShop)
   const logout = useAuthStore((s) => s.logout)
 
+  // 자동 시작 (Electron 에서만; 브라우저에선 버튼 숨김)
+  const [autoLaunch, setAutoLaunch] = useState<boolean | null>(null)
+  useEffect(() => {
+    window.electronAPI?.getAutoLaunch().then(setAutoLaunch)
+  }, [])
+  const toggleAutoLaunch = async () => {
+    if (autoLaunch == null) return
+    const applied = await window.electronAPI!.setAutoLaunch(!autoLaunch)
+    setAutoLaunch(applied)
+  }
+
   return (
     <div className={`housemenu ${closing ? 'is-closing' : ''}`}>
       <div className="housemenu__stats">
@@ -43,6 +55,17 @@ export default function HouseMenu({ closing }: { closing: boolean }) {
           <img src={landIconUrl()} alt="땅" />
           {land}
         </span>
+        {autoLaunch != null && (
+          <button
+            type="button"
+            className={`housemenu__logout housemenu__autolaunch ${
+              autoLaunch ? 'is-on' : ''
+            }`}
+            onClick={toggleAutoLaunch}
+          >
+            자동 시작 {autoLaunch ? 'ON' : 'OFF'}
+          </button>
+        )}
         <button
           type="button"
           className="housemenu__logout"

@@ -14,4 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
       dx: Math.round(dx),
       dy: Math.round(dy),
     }),
+  // 자동 시작 (로그인 시 앱 실행) 조회/설정
+  getAutoLaunch: () => ipcRenderer.invoke('get-auto-launch'),
+  setAutoLaunch: (enable) => ipcRenderer.invoke('set-auto-launch', enable),
 })

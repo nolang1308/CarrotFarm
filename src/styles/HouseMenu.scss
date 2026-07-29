@@ -72,6 +72,12 @@
     }
   }
 
+  // 자동 시작 토글: 켜져 있으면 초록
+  &__autolaunch.is-on {
+    background: #5e9331;
+    border-color: #3f6b1e;
+  }
+
   // ===== 좌/우 버튼 =====
   &__side {
     display: flex;
