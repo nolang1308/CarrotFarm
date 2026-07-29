@@ -358,6 +358,60 @@ export const carrotIconTexture = (): THREE.CanvasTexture => {
   return _carrotIcon
 }
 
+// ===== 수확 가능 반짝임 (다 자란 당근 위 스파클, 2프레임 깜빡임) =====
+const SPARK = {
+  core: '#fff9d9',
+  star: '#ffe066',
+  edge: '#ffd24a',
+}
+
+/** 프레임 0: 작은 십자 별 */
+function drawSparkSmall(pc: PixelCanvas): void {
+  dot(pc, 8, 7, SPARK.star)
+  dot(pc, 7, 8, SPARK.star)
+  dot(pc, 9, 8, SPARK.star)
+  dot(pc, 8, 9, SPARK.star)
+  dot(pc, 8, 8, SPARK.core)
+}
+
+/** 프레임 1: 팔이 긴 4방향 별 + 대각 점 */
+function drawSparkBig(pc: PixelCanvas): void {
+  // 세로 팔
+  dot(pc, 8, 5, SPARK.edge)
+  dot(pc, 8, 6, SPARK.star)
+  dot(pc, 8, 7, SPARK.star)
+  dot(pc, 8, 9, SPARK.star)
+  dot(pc, 8, 10, SPARK.star)
+  dot(pc, 8, 11, SPARK.edge)
+  // 가로 팔
+  dot(pc, 5, 8, SPARK.edge)
+  dot(pc, 6, 8, SPARK.star)
+  dot(pc, 7, 8, SPARK.star)
+  dot(pc, 9, 8, SPARK.star)
+  dot(pc, 10, 8, SPARK.star)
+  dot(pc, 11, 8, SPARK.edge)
+  // 대각 점 + 중심
+  dot(pc, 6, 6, SPARK.edge)
+  dot(pc, 10, 6, SPARK.edge)
+  dot(pc, 6, 10, SPARK.edge)
+  dot(pc, 10, 10, SPARK.edge)
+  dot(pc, 8, 8, SPARK.core)
+}
+
+let _sparkFrames: THREE.CanvasTexture[] | null = null
+
+/** 반짝임 프레임(0=작은 별, 1=큰 별) 텍스처 */
+export const sparkleTexture = (frame: number): THREE.CanvasTexture => {
+  if (!_sparkFrames) {
+    _sparkFrames = [drawSparkSmall, drawSparkBig].map((draw) => {
+      const pc = makeCanvas(16, 8)
+      draw(pc)
+      return toTexture(pc.canvas)
+    })
+  }
+  return _sparkFrames[frame % 2]
+}
+
 // ===== 도트 글리프 (직접 그린 픽셀 숫자/기호) =====
 const GLYPH_PLUS = ['00100', '00100', '11111', '00100', '00100']
 const GLYPH_ONE = ['010', '110', '010', '010', '111']

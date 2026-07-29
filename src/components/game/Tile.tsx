@@ -80,8 +80,13 @@ export default function Tile({ tile, position, occupied = false }: TileProps) {
         <meshStandardMaterial attach="material-5" map={side} />
       </mesh>
 
-      {/* 작물 */}
-      {tile.growth > 0 && <Carrot growth={tile.growth} />}
+      {/* 작물 (반짝임 위상은 타일 좌표로 달리 줘서 다 같이 깜빡이지 않게) */}
+      {tile.growth > 0 && (
+        <Carrot
+          growth={tile.growth}
+          sparklePhase={((tile.x * 13 + tile.z * 7) % 8) / 4}
+        />
+      )}
     </group>
   )
 }
