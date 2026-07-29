@@ -147,6 +147,8 @@ export default function WidgetResizer() {
     let modalEl: Element | null = null
     if (st.marketOpen) modalEl = document.querySelector('.market__panel')
     else if (st.shopOpen) modalEl = document.querySelector('.shop__panel')
+    else if (st.settingsOpen)
+      modalEl = document.querySelector('.settings__panel')
     if (modalEl) {
       const el = modalEl as HTMLElement
       w = Math.max(w, el.offsetWidth + MODAL_MARGIN * 2)

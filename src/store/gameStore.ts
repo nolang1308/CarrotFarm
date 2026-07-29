@@ -181,6 +181,8 @@ interface GameState {
   marketOpen: boolean
   /** 상점 UI 열림 여부 */
   shopOpen: boolean
+  /** 설정 UI 열림 여부 */
+  settingsOpen: boolean
   /** 집 클릭으로 뜨는 농장 관리 패널 열림 여부 */
   panelOpen: boolean
   tiles: TileState[]
@@ -222,6 +224,8 @@ interface GameState {
   toggleMarket: () => void
   /** 상점 UI 토글 */
   toggleShop: () => void
+  /** 설정 UI 토글 */
+  toggleSettings: () => void
   /** 농장 관리 패널 토글 (집 클릭) */
   togglePanel: () => void
   /** 농장 관리 패널 닫기 */
@@ -242,6 +246,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   ...initialFarm(),
   marketOpen: false,
   shopOpen: false,
+  settingsOpen: false,
   panelOpen: false,
   harvestEffects: [],
   hydrated: false,
@@ -268,6 +273,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       tutorialDone: true,
       marketOpen: false,
       shopOpen: false,
+      settingsOpen: false,
       panelOpen: false,
     }),
 
@@ -310,11 +316,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     return true
   },
 
-  // 시장/상점 모달은 동시에 하나만 열림 (열면 관리 패널은 닫음)
+  // 시장/상점/설정 모달은 동시에 하나만 열림 (열면 관리 패널은 닫음)
   toggleMarket: () =>
     set((state) => ({
       marketOpen: !state.marketOpen,
       shopOpen: false,
+      settingsOpen: false,
       panelOpen: false,
     })),
 
@@ -322,6 +329,15 @@ export const useGameStore = create<GameState>((set, get) => ({
     set((state) => ({
       shopOpen: !state.shopOpen,
       marketOpen: false,
+      settingsOpen: false,
+      panelOpen: false,
+    })),
+
+  toggleSettings: () =>
+    set((state) => ({
+      settingsOpen: !state.settingsOpen,
+      marketOpen: false,
+      shopOpen: false,
       panelOpen: false,
     })),
 

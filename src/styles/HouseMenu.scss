@@ -47,8 +47,8 @@
     }
   }
 
-  // 자산 칩 줄 끝의 로그아웃 버튼 (칩과 같은 크기감, 누를 수 있게)
-  &__logout {
+  // 자산 칩 줄 끝의 설정 버튼 (칩과 같은 크기감, 누를 수 있게)
+  &__settings {
     padding: 6px 11px;
     font-family: inherit;
     font-size: 13px;
@@ -70,12 +70,6 @@
       transform: translateY(1px);
       box-shadow: 1px 1px 0 rgba(46, 32, 16, 0.3);
     }
-  }
-
-  // 자동 시작 토글: 켜져 있으면 초록
-  &__autolaunch.is-on {
-    background: #5e9331;
-    border-color: #3f6b1e;
   }
 
   // ===== 좌/우 버튼 =====

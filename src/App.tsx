@@ -2,6 +2,7 @@ import GameScene from './components/game/GameScene'
 import BuildBar from './components/ui/BuildBar'
 import Market from './components/ui/Market'
 import Shop from './components/ui/Shop'
+import Settings from './components/ui/Settings'
 import AuthScreen from './components/ui/AuthScreen'
 import Tutorial from './components/ui/Tutorial'
 import PriceTicker from './components/game/PriceTicker'
@@ -44,6 +45,7 @@ function App() {
           <BuildBar />
           <Market />
           <Shop />
+          <Settings />
           {/* 첫 로그인 튜토리얼 (완료한 계정이면 아무것도 안 그림) */}
           <Tutorial />
           {/* 시세 실시간 갱신 루프 (렌더링 없음) */}
