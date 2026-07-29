@@ -293,9 +293,12 @@ const CARROT_DRAWERS = [
   drawCarrotHigh,
 ]
 
-function buildCarrotStages(): THREE.CanvasTexture[] {
-  return CARROT_DRAWERS.map((draw) => {
-    const pc = makeCanvas(16, 8) // 배경은 투명(아무것도 안 칠함)
+/** draw 함수 목록 → 16x16 스프라이트 프레임 텍스처들 (배경 투명) */
+function buildFrames(
+  drawers: Array<(pc: PixelCanvas) => void>,
+): THREE.CanvasTexture[] {
+  return drawers.map((draw) => {
+    const pc = makeCanvas(16, 8)
     draw(pc)
     return toTexture(pc.canvas)
   })
@@ -305,7 +308,7 @@ let _carrots: THREE.CanvasTexture[] | null = null
 
 /** 성장 단계(1~5)에 해당하는 당근 스프라이트 텍스처 */
 export const carrotStageTexture = (stage: number): THREE.CanvasTexture => {
-  _carrots ??= buildCarrotStages()
+  _carrots ??= buildFrames(CARROT_DRAWERS)
   const i = Math.min(Math.max(stage, 1), CARROT_DRAWERS.length) - 1
   return _carrots[i]
 }
@@ -402,13 +405,7 @@ let _sparkFrames: THREE.CanvasTexture[] | null = null
 
 /** 반짝임 프레임(0=작은 별, 1=큰 별) 텍스처 */
 export const sparkleTexture = (frame: number): THREE.CanvasTexture => {
-  if (!_sparkFrames) {
-    _sparkFrames = [drawSparkSmall, drawSparkBig].map((draw) => {
-      const pc = makeCanvas(16, 8)
-      draw(pc)
-      return toTexture(pc.canvas)
-    })
-  }
+  _sparkFrames ??= buildFrames([drawSparkSmall, drawSparkBig])
   return _sparkFrames[frame % 2]
 }
 

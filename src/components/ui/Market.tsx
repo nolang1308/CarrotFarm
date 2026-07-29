@@ -23,7 +23,7 @@ export default function Market() {
   return (
     <div className={`market ${closing ? 'is-closing' : ''}`} onClick={toggle}>
       <div
-        className={`market__panel ${closing ? 'is-closing' : ''}`}
+        className={`market__panel modal-panel ${closing ? 'is-closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="market__title">

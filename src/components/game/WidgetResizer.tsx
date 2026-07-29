@@ -143,16 +143,12 @@ export default function WidgetResizer() {
     let w = uRight - uLeft + MARGIN * 2
     let h = uTop - uBottom + MARGIN * 2
 
-    // 중앙 팝업(시장/상점)이 떠 있으면 실제 UI 크기를 측정해 잘리지 않게 창을 키움
-    let modalEl: Element | null = null
-    if (st.marketOpen) modalEl = document.querySelector('.market__panel')
-    else if (st.shopOpen) modalEl = document.querySelector('.shop__panel')
-    else if (st.settingsOpen)
-      modalEl = document.querySelector('.settings__panel')
+    // 중앙 팝업(시장/상점/설정 등 .modal-panel)이 떠 있으면
+    // 실제 UI 크기를 측정해 잘리지 않게 창을 키움
+    const modalEl = document.querySelector('.modal-panel') as HTMLElement | null
     if (modalEl) {
-      const el = modalEl as HTMLElement
-      w = Math.max(w, el.offsetWidth + MODAL_MARGIN * 2)
-      h = Math.max(h, el.offsetHeight + MODAL_MARGIN * 2)
+      w = Math.max(w, modalEl.offsetWidth + MODAL_MARGIN * 2)
+      h = Math.max(h, modalEl.offsetHeight + MODAL_MARGIN * 2)
     }
 
 

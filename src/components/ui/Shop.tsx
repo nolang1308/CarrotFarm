@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import {
-  GROW_TOTAL_MS,
   SEED_COST,
   SEED_PACK,
-  TUTORIAL_GROW_TOTAL_MS,
   blackRabbitCost,
+  growTotalMs,
   rabbitCost,
   tileCost,
   useGameStore,
@@ -46,7 +45,7 @@ export default function Shop() {
   const nextBlackRabbitCost = blackRabbitCost(blackRabbits)
 
   // 다 자랄 때까지 걸리는 시간 표기 (튜토리얼 중에는 빠른 시간 그대로 표시)
-  const growTotal = tutorialDone ? GROW_TOTAL_MS : TUTORIAL_GROW_TOTAL_MS
+  const growTotal = growTotalMs(tutorialDone)
   const growText =
     growTotal >= 60_000
       ? `${Math.round(growTotal / 60_000)}분`
@@ -104,7 +103,7 @@ export default function Shop() {
   return (
     <div className={`shop ${closing ? 'is-closing' : ''}`} onClick={toggle}>
       <div
-        className={`shop__panel ${closing ? 'is-closing' : ''}`}
+        className={`shop__panel modal-panel ${closing ? 'is-closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="shop__header">

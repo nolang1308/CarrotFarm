@@ -16,7 +16,8 @@
     "electron:build": "npm run build && electron-builder",
     "electron:build:mac": "npm run build && electron-builder --mac",
     "electron:build:win": "npm run build && electron-builder --win",
-    "release": "bash scripts/release.sh"
+    "release": "bash scripts/release.sh",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.114.0",

@@ -8,8 +8,7 @@ import {
   type User,
 } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from '../firebase/config'
-import { saveFarm } from '../firebase/farmSync'
-import { snapshotFarm, useGameStore } from './gameStore'
+import { flushFarm } from '../firebase/farmSync'
 
 /** Firebase 오류 코드 → 한국어 안내 문구 */
 function messageOf(err: unknown): string {
@@ -91,14 +90,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     // 로그아웃 후에는 Firestore 쓰기 권한이 없으므로, 밀린 변경을 먼저 저장
-    const user = auth.currentUser
-    if (user && useGameStore.getState().hydrated) {
-      try {
-        await saveFarm(user.uid, snapshotFarm(useGameStore.getState()))
-      } catch (err) {
-        console.error('로그아웃 전 저장 실패:', err)
-      }
-    }
+    await flushFarm()
     await signOut(auth)
   },
 

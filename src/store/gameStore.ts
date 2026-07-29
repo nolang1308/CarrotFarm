@@ -47,11 +47,16 @@ export const GROW_TOTAL_MS = 60_000
 export const TUTORIAL_GROW_TOTAL_MS = 5_000
 
 /** 성장 단계 전환 횟수 (1단계 → 5단계) */
-const GROW_STEPS = 4
+const GROW_STEPS = RIPE_STAGE - 1
 
-/** 한 단계 자라는 데 걸리는 시간(ms). 튜토리얼 중에는 빠르게 */
+/** 지금 적용되는 총 성장 시간(ms). "어느 속도가 적용되는가"는 여기 한 곳만 안다 */
+export function growTotalMs(tutorialDone: boolean): number {
+  return tutorialDone ? GROW_TOTAL_MS : TUTORIAL_GROW_TOTAL_MS
+}
+
+/** 한 단계 자라는 데 걸리는 시간(ms) */
 export function growMs(tutorialDone: boolean): number {
-  return (tutorialDone ? GROW_TOTAL_MS : TUTORIAL_GROW_TOTAL_MS) / GROW_STEPS
+  return growTotalMs(tutorialDone) / GROW_STEPS
 }
 
 /** 시작 시 주어지는 타일 수 (3x3). 땅 가격 계산은 이걸 넘는 구매분 기준 */
@@ -434,20 +439,22 @@ export const useGameStore = create<GameState>((set, get) => ({
   tickGrowth: (now) => {
     const state = get()
     const perStage = growMs(state.tutorialDone)
-    let changed = false
-    const tiles = state.tiles.map((t) => {
-      // 자라는 중인 작물만: 심은 시각 기준으로 현재 단계 계산
-      if (t.plantedAt == null || t.growth >= RIPE_STAGE) return t
-      const stage = Math.min(
+    // 심은 시각 기준 현재 단계 (자라는 중인 작물만)
+    const stageOf = (t: TileState): TileState['growth'] => {
+      if (t.plantedAt == null || t.growth >= RIPE_STAGE) return t.growth
+      return Math.min(
         RIPE_STAGE,
         1 + Math.floor((now - t.plantedAt) / perStage),
       ) as TileState['growth']
-      if (stage === t.growth) return t
-      changed = true
-      return { ...t, growth: stage }
+    }
+    // 대부분의 틱은 변화가 없으므로, 배열 할당 전에 먼저 훑고 없으면 종료
+    if (state.tiles.every((t) => stageOf(t) === t.growth)) return
+    set({
+      tiles: state.tiles.map((t) => {
+        const stage = stageOf(t)
+        return stage === t.growth ? t : { ...t, growth: stage }
+      }),
     })
-    // 바뀐 게 없으면 set 자체를 생략 (빈 set 도 구독자에게 알림이 가므로)
-    if (changed) set({ tiles })
   },
 
   removeHarvestEffect: (id) =>

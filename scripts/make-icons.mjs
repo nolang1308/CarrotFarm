@@ -30,26 +30,10 @@ const C = {
   orangeDark: '#e8590c',
 }
 
-/** 모서리 3단 계단 라운딩에서 잘려나가는 오프셋들 */
-const CORNER_CUT = [
-  [0, 0], [1, 0], [2, 0],
-  [0, 1], [1, 1],
-  [0, 2],
-]
-
+/** 바탕판 판정: 모서리 3단 계단 라운딩 (가장 가까운 두 변까지의 거리 합 > 2) */
 function inPlate(x, y) {
   if (x < 0 || y < 0 || x >= SIZE || y >= SIZE) return false
-  for (const [dx, dy] of CORNER_CUT) {
-    if (
-      (x === dx && y === dy) ||
-      (x === SIZE - 1 - dx && y === dy) ||
-      (x === dx && y === SIZE - 1 - dy) ||
-      (x === SIZE - 1 - dx && y === SIZE - 1 - dy)
-    ) {
-      return false
-    }
-  }
-  return true
+  return Math.min(x, SIZE - 1 - x) + Math.min(y, SIZE - 1 - y) > 2
 }
 
 /** 16x16 그리드(색 문자열 | null) 생성 */

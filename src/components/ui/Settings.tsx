@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { snapshotFarm, useGameStore } from '../../store/gameStore'
+import { useGameStore } from '../../store/gameStore'
 import { useAuthStore } from '../../store/authStore'
-import { saveFarm } from '../../firebase/farmSync'
+import { flushFarm } from '../../firebase/farmSync'
 import { useModalAnim } from '../../hooks/useModalAnim'
 import '../../styles/Settings.scss'
+
+const isElectron = Boolean(window.electronAPI)
 
 /** 설정 모달: 자동 시작 토글 + 로그아웃 */
 export default function Settings() {
@@ -12,44 +14,34 @@ export default function Settings() {
   const logout = useAuthStore((s) => s.logout)
   const { mounted, closing } = useModalAnim(open)
 
-  // 자동 시작 (Electron 에서만; 브라우저에선 줄 자체를 숨김)
-  const [autoLaunch, setAutoLaunch] = useState<boolean | null>(null)
+  // 자동 시작 상태 (이 컴포넌트만 값을 바꾸므로 시작 시 한 번만 읽으면 됨)
+  const [autoLaunch, setAutoLaunch] = useState(false)
   useEffect(() => {
-    if (!open) return
-    window.electronAPI?.getAutoLaunch().then(setAutoLaunch)
-  }, [open])
+    if (isElectron) window.electronAPI!.getAutoLaunch().then(setAutoLaunch)
+  }, [])
 
   if (!mounted) return null
 
   const toggleAutoLaunch = async () => {
-    if (autoLaunch == null) return
     const applied = await window.electronAPI!.setAutoLaunch(!autoLaunch)
     setAutoLaunch(applied)
   }
 
   // 종료 전에 밀린 농장 저장을 먼저 끝낸다 (디바운스 대기분 유실 방지)
   const quitApp = async () => {
-    const user = useAuthStore.getState().user
-    const game = useGameStore.getState()
-    if (user && game.hydrated) {
-      try {
-        await saveFarm(user.uid, snapshotFarm(game))
-      } catch (err) {
-        console.error('종료 전 저장 실패:', err)
-      }
-    }
+    await flushFarm()
     window.electronAPI?.quitApp()
   }
 
   return (
     <div className={`settings ${closing ? 'is-closing' : ''}`} onClick={toggle}>
       <div
-        className={`settings__panel ${closing ? 'is-closing' : ''}`}
+        className={`settings__panel modal-panel ${closing ? 'is-closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="settings__title">설정</div>
 
-        {autoLaunch != null && (
+        {isElectron && (
           <div className="settings__row">
             <div className="settings__label">
               자동 시작
@@ -79,7 +71,7 @@ export default function Settings() {
           </button>
         </div>
 
-        {window.electronAPI && (
+        {isElectron && (
           <div className="settings__row">
             <div className="settings__label">
               앱 종료

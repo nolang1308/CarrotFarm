@@ -18,6 +18,22 @@ interface FarmDoc extends Omit<FarmSave, 'tiles'> {
 
 const farmRef = (uid: string) => doc(db, 'farms', uid)
 
+/**
+ * FarmSync 가 등록하는 "밀린 변경만 저장하는" 플러시.
+ * 로그아웃·앱 종료 등 저장을 보장해야 하는 지점은 flushFarm() 하나만 부르면 된다
+ * (디바운스 대기 여부는 FarmSync 만 알기 때문에 여기로 모은다).
+ */
+let farmFlusher: (() => Promise<void>) | null = null
+
+export function registerFarmFlusher(fn: (() => Promise<void>) | null): void {
+  farmFlusher = fn
+}
+
+/** 밀린 농장 변경을 지금 저장 (없으면 아무것도 안 함) */
+export async function flushFarm(): Promise<void> {
+  if (farmFlusher) await farmFlusher()
+}
+
 /** 농장 저장 (문서 전체 덮어쓰기) */
 export async function saveFarm(uid: string, save: FarmSave): Promise<void> {
   const data: FarmDoc = {

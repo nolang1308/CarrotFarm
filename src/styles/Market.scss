@@ -1,16 +1,5 @@
 @use './variables' as *;
 
-// Hud 와 동일한 계단 노치 (픽셀 라운딩)
-$notch: polygon(
-  0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0,
-  calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px,
-  calc(100% - 4px) 8px, 100% 8px,
-  100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px),
-  calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px),
-  calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px),
-  4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px)
-);
-
 .market {
   position: absolute;
   inset: 0;

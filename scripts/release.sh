@@ -45,6 +45,11 @@ echo "🥕 [1/5] 버전 갱신 → $VERSION"
 npm version "$VERSION" --no-git-tag-version >/dev/null
 sed -i '' "s/const VERSION = '[0-9.]*'/const VERSION = '$VERSION'/" \
   website/src/components/Download.tsx
+# sed 가 조용히 실패하지 않았는지 확인 (파일 구조가 바뀌면 여기서 잡힘)
+if ! grep -q "const VERSION = '$VERSION'" website/src/components/Download.tsx; then
+  echo "❌ website Download.tsx 버전 갱신 실패 — VERSION 상수를 찾지 못했습니다"
+  exit 1
+fi
 
 echo "🥕 [2/5] macOS 빌드 (dmg)"
 npm run electron:build:mac
@@ -52,20 +57,22 @@ npm run electron:build:mac
 echo "🥕 [3/5] Windows 빌드 (exe)"
 npm run electron:build:win
 
-# 산출물 확인 (latest.yml 이 없으면 Windows 자동 업데이트가 죽으므로 필수 검사)
-FILES=(
-  "release/CarrotFarm-$VERSION-arm64.dmg"
-  "release/CarrotFarm-$VERSION.dmg"
-  "release/CarrotFarm-Setup-$VERSION.exe"
-  "release/CarrotFarm-Setup-$VERSION.exe.blockmap"
-  "release/latest.yml"
-)
-for f in "${FILES[@]}"; do
-  if [[ ! -f "$f" ]]; then
-    echo "❌ 빌드 산출물이 없습니다: $f"
-    exit 1
-  fi
-done
+# 산출물 수집: 파일 이름은 electron-builder 의 artifactName 이 정하므로
+# 여기서 다시 적지 않고 버전이 들어간 결과물을 글롭으로 줍는다
+shopt -s nullglob
+FILES=(release/*"$VERSION"*.dmg release/*"$VERSION"*.exe release/*"$VERSION"*.exe.blockmap)
+shopt -u nullglob
+
+if [[ ${#FILES[@]} -lt 3 ]]; then
+  echo "❌ 빌드 산출물이 부족합니다 (dmg/exe 확인): ${FILES[*]:-없음}"
+  exit 1
+fi
+# latest.yml 이 없으면 Windows 자동 업데이트가 죽으므로 필수 검사
+if [[ ! -f release/latest.yml ]]; then
+  echo "❌ release/latest.yml 이 없습니다 (Windows 자동 업데이트 필수 파일)"
+  exit 1
+fi
+FILES+=(release/latest.yml)
 
 echo "🥕 [4/5] GitHub 릴리스 생성 + 업로드 (파일이 커서 수 분 걸립니다)"
 gh release create "v$VERSION" "${FILES[@]}" \

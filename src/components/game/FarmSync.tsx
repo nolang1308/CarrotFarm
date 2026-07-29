@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { snapshotFarm, useGameStore } from '../../store/gameStore'
-import { loadFarm, saveFarm } from '../../firebase/farmSync'
+import { loadFarm, registerFarmFlusher, saveFarm } from '../../firebase/farmSync'
 
 /** 변경 후 저장까지의 지연 (연속 조작을 한 번의 쓰기로 묶음) */
 const SAVE_DEBOUNCE_MS = 2000
@@ -38,18 +38,21 @@ export default function FarmSync() {
     }
     tryLoad()
 
-    // 밀린 변경을 지금 저장
-    const flush = () => {
+    // 밀린 변경을 지금 저장 (로그아웃·앱 종료도 flushFarm() 을 통해 이걸 부른다)
+    const flush = async () => {
       if (!dirty) return
       dirty = false
       if (saveTimer != null) {
         window.clearTimeout(saveTimer)
         saveTimer = null
       }
-      saveFarm(uid, snapshotFarm(useGameStore.getState())).catch((err) =>
-        console.error('농장 저장 실패:', err),
-      )
+      try {
+        await saveFarm(uid, snapshotFarm(useGameStore.getState()))
+      } catch (err) {
+        console.error('농장 저장 실패:', err)
+      }
     }
+    registerFarmFlusher(flush)
 
     const unsub = useGameStore.subscribe((s, prev) => {
       // 불러오기 전/불러오기 자체로 인한 변화는 저장하지 않음
@@ -74,13 +77,15 @@ export default function FarmSync() {
     })
 
     // 창을 닫을 때 마지막 변경 저장 (최선 노력)
-    window.addEventListener('beforeunload', flush)
+    const flushNow = () => void flush()
+    window.addEventListener('beforeunload', flushNow)
 
     return () => {
       alive = false
       unsub()
-      window.removeEventListener('beforeunload', flush)
-      flush() // 로그아웃/계정 전환 시 남은 변경 저장
+      window.removeEventListener('beforeunload', flushNow)
+      registerFarmFlusher(null)
+      void flush() // 로그아웃/계정 전환 시 남은 변경 저장
     }
   }, [user])
 

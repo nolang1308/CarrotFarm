@@ -14,3 +14,33 @@ $panel-radius: 12px;
 // ===== Z-index =====
 $z-canvas: 0;
 $z-hud: 10;
+
+// ===== 계단 노치 (픽셀 라운딩) — 팝업·버튼 공용 =====
+$notch: polygon(
+  0 8px, 4px 8px, 4px 4px, 8px 4px, 8px 0,
+  calc(100% - 8px) 0, calc(100% - 8px) 4px, calc(100% - 4px) 4px,
+  calc(100% - 4px) 8px, 100% 8px,
+  100% calc(100% - 8px), calc(100% - 4px) calc(100% - 8px),
+  calc(100% - 4px) calc(100% - 4px), calc(100% - 8px) calc(100% - 4px),
+  calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 4px),
+  4px calc(100% - 4px), 4px calc(100% - 8px), 0 calc(100% - 8px)
+);
+
+// 도트 버튼 공통 레시피 (배경색만 다름)
+@mixin pixel-button($bg) {
+  font-family: inherit;
+  color: #fff;
+  background: $bg;
+  border: none;
+  border-radius: 0;
+  clip-path: $notch;
+  cursor: pointer;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.25);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.18);
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
