@@ -109,13 +109,20 @@ ipcMain.on('window-drag-move', (e, { dx, dy }) => {
 })
 
 // ===== 자동 시작 (컴퓨터 켜면 앱도 실행) =====
+// 개발 실행(app.isPackaged=false)에서는 개발용 Electron 바이너리가 OS 로그인
+// 항목에 등록되면 안 되므로, 메모리 상태로만 토글을 흉내낸다 (UI 확인용).
+let devAutoLaunch = false
+
 ipcMain.handle('get-auto-launch', () => {
-  if (!app.isPackaged) return false // 개발 중엔 항상 꺼짐 취급
+  if (!app.isPackaged) return devAutoLaunch
   return app.getLoginItemSettings().openAtLogin
 })
 
 ipcMain.handle('set-auto-launch', (_e, enable) => {
-  if (!app.isPackaged) return false
+  if (!app.isPackaged) {
+    devAutoLaunch = Boolean(enable)
+    return devAutoLaunch
+  }
   app.setLoginItemSettings({ openAtLogin: Boolean(enable) })
   return app.getLoginItemSettings().openAtLogin
 })
