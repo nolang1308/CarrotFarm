@@ -40,8 +40,19 @@ export function isCellOccupied(
 /** 당근이 다 자란(수확 가능) 단계 */
 export const RIPE_STAGE = 5
 
-/** 한 단계 자라는 데 걸리는 시간(ms) */
-export const GROW_MS = 3000
+/** 씨앗(1단계)이 다 자랄 때까지(5단계) 걸리는 총 시간(ms) — 실제 게임 */
+export const GROW_TOTAL_MS = 60_000
+
+/** 튜토리얼 중 총 성장 시간(ms) — 기다림 없이 빠르게 배우도록 */
+export const TUTORIAL_GROW_TOTAL_MS = 5_000
+
+/** 성장 단계 전환 횟수 (1단계 → 5단계) */
+const GROW_STEPS = 4
+
+/** 한 단계 자라는 데 걸리는 시간(ms). 튜토리얼 중에는 빠르게 */
+export function growMs(tutorialDone: boolean): number {
+  return (tutorialDone ? GROW_TOTAL_MS : TUTORIAL_GROW_TOTAL_MS) / GROW_STEPS
+}
 
 /** 시작 시 주어지는 타일 수 (3x3). 땅 가격 계산은 이걸 넘는 구매분 기준 */
 export const INITIAL_TILE_COUNT = 9
@@ -422,13 +433,14 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   tickGrowth: (now) => {
     const state = get()
+    const perStage = growMs(state.tutorialDone)
     let changed = false
     const tiles = state.tiles.map((t) => {
       // 자라는 중인 작물만: 심은 시각 기준으로 현재 단계 계산
       if (t.plantedAt == null || t.growth >= RIPE_STAGE) return t
       const stage = Math.min(
         RIPE_STAGE,
-        1 + Math.floor((now - t.plantedAt) / GROW_MS),
+        1 + Math.floor((now - t.plantedAt) / perStage),
       ) as TileState['growth']
       if (stage === t.growth) return t
       changed = true

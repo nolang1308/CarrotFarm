@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import {
+  GROW_TOTAL_MS,
   SEED_COST,
   SEED_PACK,
+  TUTORIAL_GROW_TOTAL_MS,
   blackRabbitCost,
   rabbitCost,
   tileCost,
@@ -31,6 +33,7 @@ export default function Shop() {
   const buySeeds = useGameStore((s) => s.buySeeds)
   const addRabbit = useGameStore((s) => s.addRabbit)
   const addBlackRabbit = useGameStore((s) => s.addBlackRabbit)
+  const tutorialDone = useGameStore((s) => s.tutorialDone)
   const toggleBuildMode = useGameStore((s) => s.toggleBuildMode)
   const [tab, setTab] = useState<Tab>('seed')
   const { mounted, closing } = useModalAnim(open)
@@ -42,13 +45,20 @@ export default function Shop() {
   const nextRabbitCost = rabbitCost(rabbits)
   const nextBlackRabbitCost = blackRabbitCost(blackRabbits)
 
+  // 다 자랄 때까지 걸리는 시간 표기 (튜토리얼 중에는 빠른 시간 그대로 표시)
+  const growTotal = tutorialDone ? GROW_TOTAL_MS : TUTORIAL_GROW_TOTAL_MS
+  const growText =
+    growTotal >= 60_000
+      ? `${Math.round(growTotal / 60_000)}분`
+      : `${Math.round(growTotal / 1000)}초`
+
   const item =
     tab === 'seed'
       ? {
           icon: seedIconUrl(),
           name: '당근 씨앗',
           owned: `보유 ${seeds}개`,
-          desc: `밭 빈 흙에 심어 당근을 기릅니다. 한 번에 ${SEED_PACK}개씩 들어옵니다.`,
+          desc: `밭 빈 흙에 심으면 약 ${growText} 만에 다 자랍니다. 한 번에 ${SEED_PACK}개씩 들어옵니다.`,
           buyText: `씨앗 ${SEED_PACK}개`,
           cost: SEED_COST,
           canBuy: coins >= SEED_COST,
