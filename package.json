@@ -1,7 +1,7 @@
 {
   "name": "carrot-farm",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "당근 농장 아이소메트릭 도트 게임",
   "author": "CarrotFarm",
   "type": "module",
@@ -20,6 +20,7 @@
   "dependencies": {
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.10",
+    "electron-updater": "^6.8.9",
     "firebase": "^11.0.2",
     "galmuri": "^2.40.3",
     "react": "^18.3.1",
@@ -74,6 +75,11 @@
     },
     "nsis": {
       "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "nolang1308",
+      "repo": "CarrotFarm"
     }
   }
 }
