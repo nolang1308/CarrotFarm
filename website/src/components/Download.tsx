@@ -1,7 +1,7 @@
 import { carrotUrl } from '../pixel'
 import '../styles/Download.scss'
 
-const VERSION = '0.0.2'
+const VERSION = '0.0.3'
 
 /** 설치 파일은 GitHub Releases 에서 받는다 (대용량 배포의 표준) */
 const RELEASE_BASE = `https://github.com/nolang1308/CarrotFarm/releases/download/v${VERSION}`
