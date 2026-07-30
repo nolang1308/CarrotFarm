@@ -1,0 +1,41 @@
+// 코인 변동량(+/-) — 마우스 커서 바로 위에 떠올랐다 사라짐
+.coindelta {
+  position: fixed;
+  z-index: 400; // 모달 위, 튜토리얼(500) 아래
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow:
+    1px 1px 0 rgba(46, 32, 16, 0.85),
+    -1px 1px 0 rgba(46, 32, 16, 0.85),
+    1px -1px 0 rgba(46, 32, 16, 0.85),
+    -1px -1px 0 rgba(46, 32, 16, 0.85);
+  animation: coinDeltaFloat 0.9s ease-out both;
+
+  &.is-plus {
+    color: #ffd24a; // 획득: 코인 노랑
+  }
+
+  &.is-minus {
+    color: #ff8a7a; // 지출: 붉은색
+  }
+}
+
+// 커서 위 12px 에서 시작해 쑥 떠오르고 스륵 사라짐
+@keyframes coinDeltaFloat {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 12px));
+  }
+  15% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 40px));
+  }
+}
