@@ -1,8 +1,18 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import { type TileState, RIPE_STAGE } from '../../store/gameStore'
-import { carrotStageTexture, sparkleTexture } from '../../game/textures'
+import {
+  type TileState,
+  RIPE_STAGE,
+  growTotalMs,
+  useGameStore,
+} from '../../store/gameStore'
+import {
+  GAUGE_FILL_MAX,
+  carrotStageTexture,
+  growthGaugeTexture,
+  sparkleTexture,
+} from '../../game/textures'
 
 /**
  * 타일 좌표 → 반짝임 위상. 타일마다 달리 줘서 다 같이 깜빡이지 않게 한다.
@@ -10,6 +20,39 @@ import { carrotStageTexture, sparkleTexture } from '../../game/textures'
  */
 export function sparklePhaseFor(x: number, z: number): number {
   return ((Math.abs(x * 13 + z * 7) % 8) / 8) * 2
+}
+
+/** 자라는 동안 채워지는 노란 성장 게이지 (심은 시각 기준 연속 진행) */
+function GrowthGauge({ plantedAt }: { plantedAt: number }) {
+  const ref = useRef<THREE.Sprite>(null)
+  const tutorialDone = useGameStore((s) => s.tutorialDone)
+
+  useFrame(() => {
+    const gauge = ref.current
+    if (!gauge) return
+    const progress = Math.min(
+      1,
+      (Date.now() - plantedAt) / growTotalMs(tutorialDone),
+    )
+    const tex = growthGaugeTexture(progress * GAUGE_FILL_MAX)
+    const mat = gauge.material as THREE.SpriteMaterial
+    if (mat.map !== tex) {
+      mat.map = tex
+      mat.needsUpdate = true
+    }
+  })
+
+  return (
+    <sprite ref={ref} position={[0, 1.6, 0]} scale={[0.8, 0.8, 1]}>
+      <spriteMaterial
+        map={growthGaugeTexture(0)}
+        transparent
+        alphaTest={0.4}
+        toneMapped={false}
+        depthWrite={false}
+      />
+    </sprite>
+  )
 }
 
 /** 수확 가능 반짝임: 작은 별 ↔ 큰 별 2프레임을 visible 토글로 깜빡임 */
@@ -54,6 +97,8 @@ function Sparkle({ phase }: { phase: number }) {
 
 interface CarrotProps {
   growth: TileState['growth']
+  /** 씨를 심은 시각(ms) — 성장 게이지 진행 계산용 */
+  plantedAt?: number
   /** 반짝임 깜빡임 위상 (sparklePhaseFor 로 생성) */
   sparklePhase?: number
 }
@@ -63,9 +108,14 @@ interface CarrotProps {
  * <sprite> 는 항상 카메라를 바라보므로(빌보드) 픽셀 아트가 정면으로 보인다.
  * 다 자란 당근 위에는 노란 스파클이 깜빡여 수확 가능함을 알린다.
  */
-export default function Carrot({ growth, sparklePhase = 0 }: CarrotProps) {
+export default function Carrot({
+  growth,
+  plantedAt,
+  sparklePhase = 0,
+}: CarrotProps) {
   if (growth < 1) return null
   const texture = carrotStageTexture(growth)
+  const ripe = growth === RIPE_STAGE
 
   return (
     <>
@@ -78,7 +128,9 @@ export default function Carrot({ growth, sparklePhase = 0 }: CarrotProps) {
         />
       </sprite>
 
-      {growth === RIPE_STAGE && <Sparkle phase={sparklePhase} />}
+      {/* 자라는 중: 성장 게이지 / 다 자람: 반짝임 */}
+      {!ripe && plantedAt != null && <GrowthGauge plantedAt={plantedAt} />}
+      {ripe && <Sparkle phase={sparklePhase} />}
     </>
   )
 }

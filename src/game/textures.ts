@@ -361,6 +361,40 @@ export const carrotIconTexture = (): THREE.CanvasTexture => {
   return _carrotIcon
 }
 
+// ===== 성장 게이지 (자라는 당근 위 노란 바) =====
+const GAUGE = {
+  frame: '#7a5320',
+  inner: '#3f2d1c',
+  fill: '#ffd24a',
+  fillLight: '#ffe89a',
+}
+
+/** 게이지 안쪽 최대 채움 픽셀 수 */
+export const GAUGE_FILL_MAX = 14
+
+/** 16px 폭 바: 갈색 테두리 + 어두운 안쪽 + 노란 채움(fill px) */
+function drawGauge(pc: PixelCanvas, fill: number): void {
+  fillRect(pc, 0, 6, 15, 9, GAUGE.frame)
+  fillRect(pc, 1, 7, 14, 8, GAUGE.inner)
+  if (fill > 0) {
+    fillRect(pc, 1, 8, fill, 8, GAUGE.fill)
+    fillRect(pc, 1, 7, fill, 7, GAUGE.fillLight) // 윗줄 하이라이트
+  }
+}
+
+const _gauge: Array<THREE.CanvasTexture | undefined> = []
+
+/** 채움 단계(0~GAUGE_FILL_MAX)별 게이지 텍스처 (지연 생성) */
+export const growthGaugeTexture = (fill: number): THREE.CanvasTexture => {
+  const i = Math.max(0, Math.min(GAUGE_FILL_MAX, Math.round(fill)))
+  if (!_gauge[i]) {
+    const pc = makeCanvas(16, 8)
+    drawGauge(pc, i)
+    _gauge[i] = toTexture(pc.canvas)
+  }
+  return _gauge[i]!
+}
+
 // ===== 수확 가능 반짝임 (다 자란 당근 위 스파클, 2프레임 깜빡임) =====
 const SPARK = {
   core: '#fff9d9',
