@@ -34,9 +34,11 @@ const farmRef = (uid: string) => doc(db, 'farms', uid)
  * 로그아웃·앱 종료 등 저장을 보장해야 하는 지점은 flushFarm() 하나만 부르면 된다
  * (디바운스 대기 여부는 FarmSync 만 알기 때문에 여기로 모은다).
  */
-let farmFlusher: (() => Promise<void>) | null = null
+let farmFlusher: (() => Promise<unknown>) | null = null
 
-export function registerFarmFlusher(fn: (() => Promise<void>) | null): void {
+export function registerFarmFlusher(
+  fn: (() => Promise<unknown>) | null,
+): void {
   farmFlusher = fn
 }
 
