@@ -1,7 +1,7 @@
 {
   "name": "carrot-farm",
   "private": true,
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "당근 농장 아이소메트릭 도트 게임",
   "author": "CarrotFarm",
   "type": "module",
