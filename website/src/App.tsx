@@ -9,9 +9,10 @@ export default function App() {
   return (
     <div className="site">
       <Hero />
+      {/* 다운로드는 첫 화면에서 바로 보이게 상단 배치 */}
+      <Download />
       <Features />
       <HowTo />
-      <Download />
       <Footer />
     </div>
   )

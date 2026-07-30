@@ -18,13 +18,6 @@ export default function Hero() {
         <br />
         씨앗을 심고, 기다리고, 수확해서 시세 좋은 날 내다 파세요.
       </p>
-
-      <div className="hero__actions">
-        <a className="hero__cta" href="#download">
-          무료 다운로드
-        </a>
-        <span className="hero__platforms">macOS · Windows</span>
-      </div>
     </header>
   )
 }
