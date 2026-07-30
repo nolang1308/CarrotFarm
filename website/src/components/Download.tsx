@@ -27,16 +27,16 @@ const TARGETS: Target[] = [
   {
     os: 'macOS',
     detail: 'Apple Silicon (M1 이상)',
-    url: null,
-    label: '커밍순',
-    note: '맥 버전은 마무리 준비 중이에요. 조금만 기다려주세요!',
+    url: `${RELEASE_BASE}/CarrotFarm-${VERSION}-arm64.dmg`,
+    label: '.dmg 받기',
+    note: 'Apple 공증을 받은 앱이라 경고 없이 바로 설치됩니다. dmg 를 열고 앱을 Applications 폴더로 끌어다 놓으세요.',
   },
   {
     os: 'macOS',
     detail: 'Intel',
-    url: null,
-    label: '커밍순',
-    note: '맥 버전은 마무리 준비 중이에요. 조금만 기다려주세요!',
+    url: `${RELEASE_BASE}/CarrotFarm-${VERSION}.dmg`,
+    label: '.dmg 받기',
+    note: 'Apple 공증을 받은 앱이라 경고 없이 바로 설치됩니다. dmg 를 열고 앱을 Applications 폴더로 끌어다 놓으세요.',
   },
 ]
 
