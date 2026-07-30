@@ -16,6 +16,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# macOS 서명·공증 자격증명 로드 (.env.release — 커밋 안 됨)
+if [[ -f .env.release ]]; then
+  set -a
+  source .env.release
+  set +a
+fi
+
 VERSION="${1:-}"
 NOTES="${2:-}"
 
@@ -51,7 +58,15 @@ if ! grep -q "const VERSION = '$VERSION'" website/src/components/Download.tsx; t
   exit 1
 fi
 
-echo "🥕 [2/5] macOS 빌드 (dmg)"
+# 공증 자격증명 확인 (없으면 서명은 되어도 공증이 빠져 Gatekeeper 경고가 남음)
+if [[ -z "${APPLE_ID:-}" || -z "${APPLE_APP_SPECIFIC_PASSWORD:-}" || -z "${APPLE_TEAM_ID:-}" ]]; then
+  echo "⚠️  .env.release 의 공증 자격증명(APPLE_ID/APPLE_APP_SPECIFIC_PASSWORD/APPLE_TEAM_ID)이 비어 있습니다."
+  echo "    이대로 빌드하면 맥 공증이 생략됩니다. (.env.release.example 참고)"
+  read -r -p "계속할까요? (y/N) " ans
+  [[ "$ans" == "y" || "$ans" == "Y" ]] || exit 1
+fi
+
+echo "🥕 [2/5] macOS 빌드 (dmg + zip, 서명·공증 포함 — 공증은 수 분 걸릴 수 있음)"
 npm run electron:build:mac
 
 echo "🥕 [3/5] Windows 빌드 (exe)"
@@ -60,19 +75,27 @@ npm run electron:build:win
 # 산출물 수집: 파일 이름은 electron-builder 의 artifactName 이 정하므로
 # 여기서 다시 적지 않고 버전이 들어간 결과물을 글롭으로 줍는다
 shopt -s nullglob
-FILES=(release/*"$VERSION"*.dmg release/*"$VERSION"*.exe release/*"$VERSION"*.exe.blockmap)
+FILES=(
+  release/*"$VERSION"*.dmg
+  release/*"$VERSION"*.zip
+  release/*"$VERSION"*.exe
+  release/*"$VERSION"*.exe.blockmap
+  release/*"$VERSION"*.zip.blockmap
+)
 shopt -u nullglob
 
-if [[ ${#FILES[@]} -lt 3 ]]; then
-  echo "❌ 빌드 산출물이 부족합니다 (dmg/exe 확인): ${FILES[*]:-없음}"
+if [[ ${#FILES[@]} -lt 4 ]]; then
+  echo "❌ 빌드 산출물이 부족합니다 (dmg/zip/exe 확인): ${FILES[*]:-없음}"
   exit 1
 fi
-# latest.yml 이 없으면 Windows 자동 업데이트가 죽으므로 필수 검사
-if [[ ! -f release/latest.yml ]]; then
-  echo "❌ release/latest.yml 이 없습니다 (Windows 자동 업데이트 필수 파일)"
-  exit 1
-fi
-FILES+=(release/latest.yml)
+# 자동 업데이트 메타데이터: latest.yml(Windows) / latest-mac.yml(macOS) 필수
+for meta in release/latest.yml release/latest-mac.yml; do
+  if [[ ! -f "$meta" ]]; then
+    echo "❌ $meta 이 없습니다 (자동 업데이트 필수 파일)"
+    exit 1
+  fi
+done
+FILES+=(release/latest.yml release/latest-mac.yml)
 
 echo "🥕 [4/5] GitHub 릴리스 생성 + 업로드 (파일이 커서 수 분 걸립니다)"
 gh release create "v$VERSION" "${FILES[@]}" \

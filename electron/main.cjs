@@ -1,75 +1,13 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('path')
-const https = require('https')
 
 // ===================================================================
-// 업데이트
-// - Windows: electron-updater 로 자동 다운로드 → 재시작 시 설치
-//   (GitHub Releases 의 latest.yml 을 업데이트 서버로 사용)
-// - macOS: 미서명 앱은 OS가 자동 교체 설치를 막으므로,
-//   최신 릴리스 버전만 확인해서 다운로드 페이지로 안내
+// 업데이트: 양 플랫폼 모두 electron-updater 로 자동 다운로드 → 재시작 시 설치
+// (GitHub Releases 의 latest.yml / latest-mac.yml 을 업데이트 서버로 사용.
+//  macOS 는 서명·공증된 빌드부터 자동 설치가 동작한다)
 // ===================================================================
-const REPO_OWNER = 'nolang1308'
-const REPO_NAME = 'CarrotFarm'
-
-/** 'x.y.z' 버전 비교: a 가 b 보다 새 버전이면 true */
-function isNewerVersion(a, b) {
-  const pa = String(a).split('.').map(Number)
-  const pb = String(b).split('.').map(Number)
-  for (let i = 0; i < 3; i++) {
-    if ((pa[i] || 0) > (pb[i] || 0)) return true
-    if ((pa[i] || 0) < (pb[i] || 0)) return false
-  }
-  return false
-}
-
-/** macOS: GitHub 최신 릴리스 태그 확인 → 새 버전이면 안내 창 */
-function checkUpdateMac() {
-  const req = https.get(
-    {
-      hostname: 'api.github.com',
-      path: `/repos/${REPO_OWNER}/${REPO_NAME}/releases/latest`,
-      headers: { 'User-Agent': 'CarrotFarm' },
-    },
-    (res) => {
-      let body = ''
-      res.on('data', (c) => (body += c))
-      res.on('end', () => {
-        try {
-          const latest = String(JSON.parse(body).tag_name || '').replace(/^v/, '')
-          if (!latest || !isNewerVersion(latest, app.getVersion())) return
-          dialog
-            .showMessageBox({
-              type: 'info',
-              buttons: ['다운로드 페이지 열기', '나중에'],
-              defaultId: 0,
-              title: '새 버전이 나왔어요',
-              message: `당근농장 v${latest} 이 나왔어요!`,
-              detail: '새 버전을 받아 설치해 주세요. 농장은 계정에 저장되어 있어 그대로 유지됩니다.',
-            })
-            .then((r) => {
-              if (r.response === 0) {
-                shell.openExternal(
-                  `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/latest`,
-                )
-              }
-            })
-        } catch {
-          /* 파싱 실패는 무시 (다음 실행 때 다시 확인) */
-        }
-      })
-    },
-  )
-  req.on('error', () => {}) // 오프라인 등은 조용히 무시
-}
-
-/** Windows: electron-updater 자동 업데이트 */
 function setupAutoUpdate() {
   if (!app.isPackaged) return // 개발 중에는 확인 안 함
-  if (process.platform === 'darwin') {
-    setTimeout(checkUpdateMac, 3000)
-    return
-  }
   try {
     const { autoUpdater } = require('electron-updater')
     autoUpdater.on('update-downloaded', (info) => {

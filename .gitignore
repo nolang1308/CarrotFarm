@@ -31,3 +31,6 @@ firebase-debug.log
 # build cache
 *.tsbuildinfo
 dist-tsnode
+
+# 서명·공증 자격증명
+.env.release
