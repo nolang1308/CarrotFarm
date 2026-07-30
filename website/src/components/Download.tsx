@@ -9,33 +9,54 @@ const RELEASE_BASE = `https://github.com/nolang1308/CarrotFarm/releases/download
 interface Target {
   os: string
   detail: string
-  /** 다운로드 URL. null 이면 아직 준비 중 */
+  /** 다운로드 URL. null 이면 커밍순 */
   url: string | null
   label: string
+  /** 호버 시 아래로 펼쳐지는 주의사항 */
+  note: string
 }
 
 const TARGETS: Target[] = [
-  {
-    os: 'macOS',
-    detail: 'Apple Silicon (M1 이상)',
-    url: `${RELEASE_BASE}/CarrotFarm-${VERSION}-arm64.dmg`,
-    label: '.dmg 받기',
-  },
-  {
-    os: 'macOS',
-    detail: 'Intel',
-    url: `${RELEASE_BASE}/CarrotFarm-${VERSION}.dmg`,
-    label: '.dmg 받기',
-  },
   {
     os: 'Windows',
     detail: 'Windows 10 이상 (64bit)',
     url: `${RELEASE_BASE}/CarrotFarm-Setup-${VERSION}.exe`,
     label: '.exe 받기',
+    note: '설치 시 "Windows의 PC 보호" 경고가 뜰 수 있어요. [추가 정보] → [실행]을 누르면 정상 설치됩니다. 아직 서명 인증서가 없어서 뜨는 안내일 뿐, 안전해요.',
+  },
+  {
+    os: 'macOS',
+    detail: 'Apple Silicon (M1 이상)',
+    url: null,
+    label: '커밍순',
+    note: '맥 버전은 마무리 준비 중이에요. 조금만 기다려주세요!',
+  },
+  {
+    os: 'macOS',
+    detail: 'Intel',
+    url: null,
+    label: '커밍순',
+    note: '맥 버전은 마무리 준비 중이에요. 조금만 기다려주세요!',
   },
 ]
 
-/** 다운로드 섹션: macOS(arm64/intel) + Windows */
+/** 카드 공통 내용 (호버 시 주의사항이 아래로 부드럽게 펼쳐짐) */
+function CardBody({ t, soon }: { t: Target; soon?: boolean }) {
+  return (
+    <>
+      <span className="download__os">{t.os}</span>
+      <span className="download__detail">{t.detail}</span>
+      <span className={`download__button ${soon ? 'download__button--soon' : ''}`}>
+        {t.label}
+      </span>
+      <span className="download__notice">
+        <span className="download__notice-inner">{t.note}</span>
+      </span>
+    </>
+  )
+}
+
+/** 다운로드 섹션: Windows + macOS(커밍순) */
 export default function Download() {
   return (
     <section id="download" className="download">
@@ -48,20 +69,14 @@ export default function Download() {
         {TARGETS.map((t) =>
           t.url ? (
             <a key={t.os + t.detail} className="download__card" href={t.url}>
-              <span className="download__os">{t.os}</span>
-              <span className="download__detail">{t.detail}</span>
-              <span className="download__button">{t.label}</span>
+              <CardBody t={t} />
             </a>
           ) : (
             <div
               key={t.os + t.detail}
               className="download__card download__card--soon"
             >
-              <span className="download__os">{t.os}</span>
-              <span className="download__detail">{t.detail}</span>
-              <span className="download__button download__button--soon">
-                {t.label}
-              </span>
+              <CardBody t={t} soon />
             </div>
           ),
         )}
