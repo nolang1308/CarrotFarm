@@ -21,6 +21,14 @@
     image-rendering: pixelated;
   }
 
+  // 코인 ↔ 당근 구분선
+  &__divider {
+    width: 2px;
+    height: 16px;
+    margin: 0 3px;
+    background: rgba(122, 83, 32, 0.35);
+  }
+
   // 랭킹 버튼 (코인바 자체는 클릭 통과라 버튼만 받는다)
   &__rank {
     display: flex;

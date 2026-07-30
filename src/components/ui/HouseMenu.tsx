@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/gameStore'
 import {
   blackRabbitIconUrl,
+  carrotIconUrl,
   landIconUrl,
   marketFrameUrl,
   marketIconUrl,
@@ -13,6 +14,7 @@ import '../../styles/HouseMenu.scss'
 
 /** 집에 붙는 메뉴: 위=보유 자산(코인은 지붕 위 CoinBar), 왼쪽=시장, 오른쪽=상점 */
 export default function HouseMenu({ closing }: { closing: boolean }) {
+  const carrots = useGameStore((s) => s.carrots)
   const seeds = useGameStore((s) => s.seeds)
   const rabbits = useGameStore((s) => s.rabbits)
   const blackRabbits = useGameStore((s) => s.blackRabbits)
@@ -24,6 +26,10 @@ export default function HouseMenu({ closing }: { closing: boolean }) {
   return (
     <div className={`housemenu ${closing ? 'is-closing' : ''}`}>
       <div className="housemenu__stats">
+        <span className="housemenu__chip">
+          <img src={carrotIconUrl()} alt="당근" />
+          {carrots}
+        </span>
         <span className="housemenu__chip">
           <img src={seedIconUrl()} alt="씨앗" />
           {seeds}
