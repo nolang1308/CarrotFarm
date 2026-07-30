@@ -45,9 +45,10 @@ export async function flushFarm(): Promise<void> {
   if (farmFlusher) await farmFlusher()
 }
 
-/** 랭킹 표시용 이름 (이메일 앞부분) */
+/** 랭킹 표시용 이름: 닉네임 → (없으면) 이메일 앞부분 → '농부' */
 function displayName(): string {
-  return auth.currentUser?.email?.split('@')[0] ?? '농부'
+  const u = auth.currentUser
+  return u?.displayName || u?.email?.split('@')[0] || '농부'
 }
 
 /** 랭킹용 공개 프로필(이름·코인) 갱신 */

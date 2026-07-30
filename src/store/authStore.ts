@@ -5,6 +5,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
+  updateProfile,
   type User,
 } from 'firebase/auth'
 import { auth, isFirebaseConfigured } from '../firebase/config'
@@ -48,8 +49,12 @@ interface AuthState {
   error: string | null
   /** 이메일/비밀번호 로그인. 성공 여부 반환 */
   signIn: (email: string, password: string) => Promise<boolean>
-  /** 이메일/비밀번호 회원가입(가입 즉시 로그인됨). 성공 여부 반환 */
-  signUp: (email: string, password: string) => Promise<boolean>
+  /** 이메일/비밀번호 회원가입(가입 즉시 로그인됨). 닉네임은 랭킹 등에 표시. 성공 여부 반환 */
+  signUp: (
+    email: string,
+    password: string,
+    nickname: string,
+  ) => Promise<boolean>
   /** 로그아웃 */
   logout: () => Promise<void>
   clearError: () => void
@@ -75,10 +80,16 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signUp: async (email, password) => {
+  signUp: async (email, password, nickname) => {
     set({ busy: true, error: null })
     try {
-      await createUserWithEmailAndPassword(auth, email.trim(), password)
+      const cred = await createUserWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password,
+      )
+      // 닉네임은 Auth 프로필(displayName)에 저장 → 랭킹 이름 등에 사용
+      await updateProfile(cred.user, { displayName: nickname.trim() })
       return true
     } catch (err) {
       set({ error: messageOf(err) })

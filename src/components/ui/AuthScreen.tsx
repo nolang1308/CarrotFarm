@@ -26,6 +26,7 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [password2, setPassword2] = useState('')
+  const [nickname, setNickname] = useState('')
   // 비밀번호 확인 불일치 등 제출 전 검증 문구 (스토어 error 와 별도)
   const [localError, setLocalError] = useState<string | null>(null)
 
@@ -43,12 +44,20 @@ export default function AuthScreen() {
       setLocalError('이메일과 비밀번호를 입력해 주세요.')
       return
     }
-    if (mode === 'signup' && password !== password2) {
-      setLocalError('비밀번호가 서로 달라요.')
+    if (mode === 'signup') {
+      const name = nickname.trim()
+      if (name.length < 2 || name.length > 12) {
+        setLocalError('닉네임은 2~12자로 지어주세요.')
+        return
+      }
+      if (password !== password2) {
+        setLocalError('비밀번호가 서로 달라요.')
+        return
+      }
+      await signUp(email, password, name)
       return
     }
-    if (mode === 'login') await signIn(email, password)
-    else await signUp(email, password)
+    await signIn(email, password)
   }
 
   const shownError = localError ?? error
@@ -83,6 +92,21 @@ export default function AuthScreen() {
             회원가입
           </button>
         </div>
+
+        {mode === 'signup' && (
+          <label className="auth__field">
+            <span>닉네임 (랭킹에 표시돼요)</span>
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="당근왕 (2~12자)"
+              maxLength={12}
+              autoComplete="nickname"
+              spellCheck={false}
+            />
+          </label>
+        )}
 
         <label className="auth__field">
           <span>이메일</span>
