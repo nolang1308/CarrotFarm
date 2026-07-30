@@ -5,6 +5,7 @@ import Shop from './components/ui/Shop'
 import Settings from './components/ui/Settings'
 import Ranking from './components/ui/Ranking'
 import CoinDelta from './components/ui/CoinDelta'
+import SaveToast from './components/ui/SaveToast'
 import AuthScreen from './components/ui/AuthScreen'
 import Tutorial from './components/ui/Tutorial'
 import PriceTicker from './components/game/PriceTicker'
@@ -51,6 +52,8 @@ function App() {
           <Ranking />
           {/* 코인 변동량(+/-)을 커서 위에 띄우는 플로팅 */}
           <CoinDelta />
+          {/* 저장 알림 토스트 */}
+          <SaveToast />
           {/* 첫 로그인 튜토리얼 (완료한 계정이면 아무것도 안 그림) */}
           <Tutorial />
           {/* 시세 실시간 갱신 루프 (렌더링 없음) */}

@@ -91,6 +91,39 @@ export const SEED_PACK = 10
 export const PRICE_MIN = 4
 export const PRICE_MAX = 30
 
+/** 정수 → [0,1) 결정론 해시 (시세 지터용) */
+function hash01(n: number): number {
+  let x = (n | 0) * 2654435761
+  x = ((x ^ (x >>> 16)) * 2246822519) | 0
+  x = (x ^ (x >>> 13)) >>> 0
+  return x / 4294967296
+}
+
+/**
+ * 시각(ms) → 당근 시세. 벽시계 기준 결정론 함수라서
+ * 저장할 필요가 없고, 모든 유저가 같은 "시장"을 본다.
+ * (파도 3개 겹침 + 분당 지터로 랜덤워크 느낌을 냄, 분 단위 변동)
+ */
+export function carrotPriceAt(ms: number): number {
+  const m = Math.floor(ms / 60_000)
+  const mid = (PRICE_MIN + PRICE_MAX) / 2
+  const wave =
+    7.5 * Math.sin(m / 9.7) +
+    4.5 * Math.sin(m / 3.1 + 1.7) +
+    2 * Math.sin(m / 1.3 + 0.5)
+  const jitter = (hash01(m) - 0.5) * 3
+  return Math.round(
+    Math.max(PRICE_MIN, Math.min(PRICE_MAX, mid + wave + jitter)),
+  )
+}
+
+/** 시각(ms) 기준 최근 n분 시세 이력 (미니 그래프용) */
+export function priceHistoryAt(ms: number, n = 40): number[] {
+  return Array.from({ length: n }, (_, i) =>
+    carrotPriceAt(ms - (n - 1 - i) * 60_000),
+  )
+}
+
 /** 타일을 Set/Map 키로 쓰기 위한 문자열 키 */
 export const tileKey = (x: number, z: number) => `${x}-${z}`
 
@@ -128,15 +161,16 @@ function createInitialTiles(): TileState[] {
   return tiles
 }
 
-/** Firestore 에 저장/복원하는 농장 데이터 (UI·일시 상태 제외) */
+/**
+ * Firestore 에 저장/복원하는 농장 데이터 (UI·일시 상태 제외).
+ * 시세는 시간 기반 결정론이라 저장하지 않는다.
+ */
 export interface FarmSave {
   coins: number
   carrots: number
   seeds: number
   rabbits: number
   blackRabbits: number
-  carrotPrice: number
-  priceHistory: number[]
   tiles: TileState[]
   buildings: Building[]
   /** 튜토리얼을 끝냈는지 (처음 로그인한 계정만 false) */
@@ -151,8 +185,6 @@ export function initialFarm(): FarmSave {
     seeds: 0,
     rabbits: 0,
     blackRabbits: 0,
-    carrotPrice: 12,
-    priceHistory: [12],
     tiles: createInitialTiles(),
     buildings: [{ id: 0, x: 0, z: 0, w: 2, h: 2, type: 'rabbit' }],
     tutorialDone: false,
@@ -167,8 +199,6 @@ export function snapshotFarm(s: FarmSave): FarmSave {
     seeds: s.seeds,
     rabbits: s.rabbits,
     blackRabbits: s.blackRabbits,
-    carrotPrice: s.carrotPrice,
-    priceHistory: s.priceHistory,
     tiles: s.tiles,
     buildings: s.buildings,
     tutorialDone: s.tutorialDone,
@@ -268,8 +298,13 @@ interface GameState {
   removeHarvestEffect: (id: number) => void
 }
 
+/** 마지막으로 시세를 반영한 분 인덱스 (분이 바뀔 때만 상태 갱신) */
+let lastPriceMinute = Math.floor(Date.now() / 60_000)
+
 export const useGameStore = create<GameState>((set, get) => ({
   ...initialFarm(),
+  carrotPrice: carrotPriceAt(Date.now()),
+  priceHistory: priceHistoryAt(Date.now()),
   marketOpen: false,
   shopOpen: false,
   settingsOpen: false,
@@ -381,19 +416,17 @@ export const useGameStore = create<GameState>((set, get) => ({
       panelOpen: false,
     })),
 
-  // 시세 랜덤 워크 (±2, 범위 제한)
-  tickPrice: () =>
-    set((state) => {
-      const step = Math.round((Math.random() - 0.5) * 4)
-      const next = Math.max(
-        PRICE_MIN,
-        Math.min(PRICE_MAX, state.carrotPrice + step),
-      )
-      return {
-        carrotPrice: next,
-        priceHistory: [...state.priceHistory, next].slice(-40),
-      }
-    }),
+  // 시세 갱신: 벽시계 기반 결정론이라 분이 바뀔 때만 다시 계산
+  tickPrice: () => {
+    const now = Date.now()
+    const minute = Math.floor(now / 60_000)
+    if (minute === lastPriceMinute) return
+    lastPriceMinute = minute
+    set({
+      carrotPrice: carrotPriceAt(now),
+      priceHistory: priceHistoryAt(now),
+    })
+  },
 
   // 보유 당근 전량을 현재 시세로 판매
   sellAllCarrots: () =>

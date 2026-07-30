@@ -1,0 +1,32 @@
+// 저장 알림 토스트 (왼쪽 아래, 떴다가 스르륵 사라짐)
+.savetoast {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 300;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #43382e;
+  background: #fffdf7;
+  border: 2px solid #7a5320;
+  box-shadow: 2px 2px 0 rgba(46, 32, 16, 0.3);
+  pointer-events: none;
+  animation: saveToastFade 1.8s ease-out both;
+}
+
+@keyframes saveToastFade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  12% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

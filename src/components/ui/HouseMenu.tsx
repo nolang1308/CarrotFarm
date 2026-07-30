@@ -1,4 +1,6 @@
 import { useGameStore } from '../../store/gameStore'
+import { flushFarm } from '../../firebase/farmSync'
+import { useSaveToast } from '../../store/saveToast'
 import {
   blackRabbitIconUrl,
   carrotIconUrl,
@@ -48,6 +50,16 @@ export default function HouseMenu({ closing }: { closing: boolean }) {
           <img src={landIconUrl()} alt="땅" />
           {land}
         </span>
+        <button
+          type="button"
+          className="housemenu__settings"
+          onClick={async () => {
+            await flushFarm()
+            useSaveToast.getState().show('저장됨!')
+          }}
+        >
+          저장
+        </button>
         <button
           type="button"
           className="housemenu__settings"

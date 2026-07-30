@@ -100,8 +100,6 @@ export async function loadFarm(uid: string): Promise<FarmSave | null> {
     seeds: d.seeds ?? 0,
     rabbits: d.rabbits ?? 1,
     blackRabbits: d.blackRabbits ?? 0,
-    carrotPrice: d.carrotPrice ?? 12,
-    priceHistory: d.priceHistory ?? [d.carrotPrice ?? 12],
     tiles,
     buildings: (d.buildings ?? []) as Building[],
     // 예전 저장본에 필드가 없으면 튜토리얼 미완료로 취급
@@ -129,8 +127,8 @@ export interface RankingResult {
   total: number
 }
 
-/** 상위 목록으로 가져올 인원 */
-const RANKING_LIMIT = 50
+/** 상위 목록으로 가져올 인원 (표시 인원만큼만 읽어 비용 절약) */
+const RANKING_LIMIT = 10
 
 /**
  * 랭킹 조회: 코인 내림차순 상위 목록 + 내 순위.
