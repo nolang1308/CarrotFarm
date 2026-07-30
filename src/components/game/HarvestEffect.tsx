@@ -5,7 +5,8 @@ import { type HarvestEffect as Fx, RIPE_STAGE } from '../../store/gameStore'
 import {
   carrotIconTexture,
   carrotStageTexture,
-  plusOneTexture,
+  plusNumTexture,
+  seedIconTexture,
 } from '../../game/textures'
 
 interface Props {
@@ -19,21 +20,27 @@ const DURATION = 1.0
 /**
  * 헤이데이식 수확 이펙트.
  * - 땅에 있던 당근이 그 자리에서 서서히 사라짐(페이드아웃)
- * - 완전한 당근이 부유하듯 위로 올라가며 사라짐
+ * - 완전한 당근 + "+1" 이 부유하듯 위로 올라가며 사라짐
+ * - 씨앗이 함께 나왔으면(fx.seeds > 0) 오른쪽에서 씨앗 + 초록 "+N" 도 떠오름
  * 다 재생되면 스스로 목록에서 제거(onDone).
  */
 export default function HarvestEffect({ fx, onDone }: Props) {
   const risingRef = useRef<THREE.Sprite>(null)
   const labelRef = useRef<THREE.Sprite>(null)
+  const seedRef = useRef<THREE.Sprite>(null)
+  const seedLabelRef = useRef<THREE.Sprite>(null)
   const groundMat = useRef<THREE.SpriteMaterial>(null)
   const risingMat = useRef<THREE.SpriteMaterial>(null)
   const labelMat = useRef<THREE.SpriteMaterial>(null)
+  const seedMat = useRef<THREE.SpriteMaterial>(null)
+  const seedLabelMat = useRef<THREE.SpriteMaterial>(null)
   const elapsed = useRef(0)
   const finished = useRef(false)
 
   const ripeTexture = carrotStageTexture(RIPE_STAGE)
   const iconTexture = carrotIconTexture()
-  const labelTexture = plusOneTexture()
+  const labelTexture = plusNumTexture(1, 'yellow')
+  const withSeeds = fx.seeds > 0
 
   useFrame((_, delta) => {
     if (finished.current) return
@@ -54,6 +61,22 @@ export default function HarvestEffect({ fx, onDone }: Props) {
     if (labelRef.current) labelRef.current.position.y = 1.5 + ease * 1.5
     if (labelMat.current) {
       labelMat.current.opacity = p < 0.4 ? 1 : 1 - (p - 0.4) / 0.6
+    }
+
+    // 씨앗 드랍: 오른쪽에서 살짝 늦게 따라 올라감
+    if (withSeeds) {
+      const pd = Math.max(0, Math.min(1, (p - 0.12) / 0.88)) // 0.12초 지연
+      const easeD = 1 - (1 - pd) * (1 - pd)
+      if (seedRef.current) seedRef.current.position.y = 0.7 + easeD * 1.3
+      if (seedMat.current) {
+        seedMat.current.opacity = pd < 0.45 ? 1 : 1 - (pd - 0.45) / 0.55
+      }
+      if (seedLabelRef.current) {
+        seedLabelRef.current.position.y = 1.2 + easeD * 1.4
+      }
+      if (seedLabelMat.current) {
+        seedLabelMat.current.opacity = pd < 0.4 ? 1 : 1 - (pd - 0.4) / 0.6
+      }
     }
 
     if (p >= 1) {
@@ -99,6 +122,42 @@ export default function HarvestEffect({ fx, onDone }: Props) {
           toneMapped={false}
         />
       </sprite>
+
+      {/* 덤으로 나온 씨앗 + 초록 "+N" (당근 오른쪽에서 살짝 늦게) */}
+      {withSeeds && (
+        <>
+          <sprite
+            ref={seedRef}
+            position={[0.5, 0.7, 0]}
+            scale={[0.85, 0.85, 1]}
+          >
+            <spriteMaterial
+              ref={seedMat}
+              map={seedIconTexture()}
+              transparent
+              alphaTest={0.01}
+              depthWrite={false}
+              toneMapped={false}
+              opacity={0}
+            />
+          </sprite>
+          <sprite
+            ref={seedLabelRef}
+            position={[0.5, 1.2, 0]}
+            scale={[0.95, 0.95, 1]}
+          >
+            <spriteMaterial
+              ref={seedLabelMat}
+              map={plusNumTexture(fx.seeds, 'green')}
+              transparent
+              depthTest={false}
+              depthWrite={false}
+              toneMapped={false}
+              opacity={0}
+            />
+          </sprite>
+        </>
+      )}
     </group>
   )
 }

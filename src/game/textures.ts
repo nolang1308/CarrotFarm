@@ -445,7 +445,11 @@ export const sparkleTexture = (frame: number): THREE.CanvasTexture => {
 
 // ===== 도트 글리프 (직접 그린 픽셀 숫자/기호) =====
 const GLYPH_PLUS = ['00100', '00100', '11111', '00100', '00100']
-const GLYPH_ONE = ['010', '110', '010', '010', '111']
+const GLYPH_DIGITS: Record<number, string[]> = {
+  1: ['010', '110', '010', '010', '111'],
+  2: ['111', '001', '111', '100', '111'],
+  3: ['111', '001', '111', '001', '111'],
+}
 
 /** 글리프(1=칠함)를 외곽선과 함께 (ox,oy)에 찍는다 */
 function stampGlyph(
@@ -473,17 +477,33 @@ function stampGlyph(
   }
 }
 
-let _plusOne: THREE.CanvasTexture | null = null
+/** "+N" 라벨 색: yellow=당근(코인빛) / green=씨앗 */
+export type PlusVariant = 'yellow' | 'green'
 
-/** 수확 시 떠오르는 "+1" 도트 숫자 (외곽선 있는 노란 글씨) */
-export const plusOneTexture = (): THREE.CanvasTexture => {
-  if (!_plusOne) {
+const PLUS_COLORS: Record<PlusVariant, { fill: string; outline: string }> = {
+  yellow: { fill: '#ffd24a', outline: '#4a2c12' },
+  green: { fill: '#8fc94e', outline: '#2c4a12' },
+}
+
+const _plusNum = new Map<string, THREE.CanvasTexture>()
+
+/** 수확 시 떠오르는 "+N"(1~3) 도트 숫자 (외곽선 있는 글씨) */
+export const plusNumTexture = (
+  n: number,
+  variant: PlusVariant = 'yellow',
+): THREE.CanvasTexture => {
+  const digit = Math.max(1, Math.min(3, Math.round(n)))
+  const key = `${digit}-${variant}`
+  let tex = _plusNum.get(key)
+  if (!tex) {
+    const { fill, outline } = PLUS_COLORS[variant]
     const pc = makeCanvas(16, 8)
-    stampGlyph(pc, GLYPH_PLUS, 2, 6, '#ffd24a', '#4a2c12')
-    stampGlyph(pc, GLYPH_ONE, 10, 6, '#ffd24a', '#4a2c12')
-    _plusOne = toTexture(pc.canvas)
+    stampGlyph(pc, GLYPH_PLUS, 2, 6, fill, outline)
+    stampGlyph(pc, GLYPH_DIGITS[digit], 10, 6, fill, outline)
+    tex = toTexture(pc.canvas)
+    _plusNum.set(key, tex)
   }
-  return _plusOne
+  return tex
 }
 
 // ===== HUD용 도트 아이콘 (DOM <img> 에 쓰는 data URL) =====
@@ -681,6 +701,18 @@ export const carrotIconUrl = (): string =>
   (_carrotUrl ??= buildIconDataUrl(drawCarrotIcon))
 export const seedIconUrl = (): string =>
   (_seedUrl ??= buildIconDataUrl(drawSeedIcon))
+
+let _seedIconTex: THREE.CanvasTexture | null = null
+
+/** 씨앗 아이콘 스프라이트 텍스처 (수확 시 씨앗 드랍 이펙트용) */
+export const seedIconTexture = (): THREE.CanvasTexture => {
+  if (!_seedIconTex) {
+    const pc = makeCanvas(16, 8)
+    drawSeedIcon(pc)
+    _seedIconTex = toTexture(pc.canvas)
+  }
+  return _seedIconTex
+}
 export const landIconUrl = (): string =>
   (_landUrl ??= buildIconDataUrl(drawLandIcon))
 export const marketIconUrl = (): string =>

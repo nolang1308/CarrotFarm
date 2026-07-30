@@ -175,11 +175,17 @@ export function snapshotFarm(s: FarmSave): FarmSave {
   }
 }
 
+/** 수확 시 씨앗이 함께 나올 확률과 개수 범위 */
+export const SEED_DROP_CHANCE = 0.4
+export const SEED_DROP_MAX = 3
+
 /** 수확 순간 재생되는 일회성 이펙트 (그리드 좌표) */
 export interface HarvestEffect {
   id: number
   x: number
   z: number
+  /** 이 수확에서 함께 나온 씨앗 수 (0이면 없음) */
+  seeds: number
 }
 
 let nextFxId = 0
@@ -425,16 +431,25 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (!target) return {}
 
       // 다 자란 당근 수확 → 당근 지급 + 이펙트 (돈은 시장에 팔아야 벌린다)
+      // 40% 확률로 씨앗 1~3개가 덤으로 나온다
       if (target.growth === RIPE_STAGE) {
         const tiles = state.tiles.map((t) =>
           t.x === x && t.z === z
             ? { ...t, growth: 0 as const, plantedAt: undefined }
             : t,
         )
+        const seedDrop =
+          Math.random() < SEED_DROP_CHANCE
+            ? 1 + Math.floor(Math.random() * SEED_DROP_MAX)
+            : 0
         return {
           tiles,
           carrots: state.carrots + 1,
-          harvestEffects: [...state.harvestEffects, { id: nextFxId++, x, z }],
+          seeds: state.seeds + seedDrop,
+          harvestEffects: [
+            ...state.harvestEffects,
+            { id: nextFxId++, x, z, seeds: seedDrop },
+          ],
         }
       }
 
