@@ -121,11 +121,37 @@
     }
   }
 
-  &__name {
+  &__info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    overflow: hidden;
+  }
+
+  &__name {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  // 밭·토끼·검은 토끼 보유 수
+  &__stats {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #8a7a68;
+
+    img {
+      width: 14px;
+      height: 14px;
+      image-rendering: pixelated;
+
+      &:not(:first-child) {
+        margin-left: 6px;
+      }
+    }
   }
 
   // 닉네임 중복 구분용 UID 앞부분

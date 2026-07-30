@@ -51,14 +51,17 @@ function displayName(): string {
   return u?.displayName || u?.email?.split('@')[0] || '농부'
 }
 
-/** 랭킹용 공개 프로필(이름·코인) 갱신 */
+/** 랭킹용 공개 프로필(이름·코인·밭/토끼 수) 갱신 */
 export async function saveLeaderboard(
   uid: string,
-  coins: number,
+  farm: FarmSave,
 ): Promise<void> {
   await setDoc(doc(db, 'leaderboard', uid), {
     name: displayName(),
-    coins,
+    coins: farm.coins,
+    land: farm.tiles.length,
+    rabbits: farm.rabbits,
+    blackRabbits: farm.blackRabbits,
     updatedAt: Date.now(),
   })
 }
@@ -75,10 +78,7 @@ export async function saveFarm(uid: string, save: FarmSave): Promise<void> {
     })),
     updatedAt: Date.now(),
   }
-  await Promise.all([
-    setDoc(farmRef(uid), data),
-    saveLeaderboard(uid, save.coins),
-  ])
+  await Promise.all([setDoc(farmRef(uid), data), saveLeaderboard(uid, save)])
 }
 
 /** 농장 불러오기. 저장본이 없으면(새 계정) null */
@@ -115,6 +115,9 @@ export interface RankEntry {
   uid: string
   name: string
   coins: number
+  land: number
+  rabbits: number
+  blackRabbits: number
 }
 
 export interface RankingResult {
@@ -143,8 +146,15 @@ export async function fetchRanking(
     getCountFromServer(board),
   ])
   const entries: RankEntry[] = topSnap.docs.map((d) => {
-    const data = d.data() as { name?: string; coins?: number }
-    return { uid: d.id, name: data.name ?? '농부', coins: data.coins ?? 0 }
+    const data = d.data() as Partial<Omit<RankEntry, 'uid'>>
+    return {
+      uid: d.id,
+      name: data.name ?? '농부',
+      coins: data.coins ?? 0,
+      land: data.land ?? 0,
+      rabbits: data.rabbits ?? 0,
+      blackRabbits: data.blackRabbits ?? 0,
+    }
   })
 
   const idx = entries.findIndex((e) => e.uid === uid)

@@ -36,9 +36,10 @@ export default function FarmSync() {
           if (!alive) return
           useGameStore.getState().hydrate(save)
           // 아무 변경 없이 접속만 해도 랭킹에 보이도록 프로필 갱신 (최선 노력)
-          void saveLeaderboard(uid, useGameStore.getState().coins).catch(
-            () => {},
-          )
+          void saveLeaderboard(
+            uid,
+            snapshotFarm(useGameStore.getState()),
+          ).catch(() => {})
         })
         .catch((err) => {
           // 오프라인 등 일시 오류: 초기화 상태로 덮어쓰지 않고 재시도만 한다

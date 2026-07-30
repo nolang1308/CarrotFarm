@@ -6,7 +6,13 @@ import {
   flushFarm,
   type RankingResult,
 } from '../../firebase/farmSync'
-import { coinIconUrl, trophyIconUrl } from '../../game/textures'
+import {
+  blackRabbitIconUrl,
+  coinIconUrl,
+  landIconUrl,
+  rabbitIconUrl,
+  trophyIconUrl,
+} from '../../game/textures'
 import { useModalAnim } from '../../hooks/useModalAnim'
 import '../../styles/Ranking.scss'
 
@@ -15,6 +21,28 @@ const SHOW_TOP = 10
 
 /** 닉네임은 중복될 수 있어서 UID 앞부분으로 구분 (전체는 툴팁) */
 const shortUid = (uid: string) => uid.slice(0, 6)
+
+/** 밭·토끼·검은 토끼 보유 수 (이름 아래 작은 줄) */
+function Stats({
+  land,
+  rabbits,
+  blackRabbits,
+}: {
+  land: number
+  rabbits: number
+  blackRabbits: number
+}) {
+  return (
+    <span className="ranking__stats">
+      <img src={landIconUrl()} alt="밭" />
+      {land}
+      <img src={rabbitIconUrl()} alt="토끼" />
+      {rabbits}
+      <img src={blackRabbitIconUrl()} alt="검은 토끼" />
+      {blackRabbits}
+    </span>
+  )
+}
 
 /** 랭킹 모달: 코인 자산 기준 상위 목록 + 내 순위 */
 export default function Ranking() {
@@ -44,7 +72,8 @@ export default function Ranking() {
   if (!mounted) return null
 
   const myUid = useAuthStore.getState().user?.uid
-  const myCoins = useGameStore.getState().coins
+  const game = useGameStore.getState()
+  const myCoins = game.coins
   const top = result?.entries.slice(0, SHOW_TOP) ?? []
   const meInTop = top.some((e) => e.uid === myUid)
 
@@ -86,10 +115,17 @@ export default function Ranking() {
               <span className={`ranking__rank ranking__rank--${i + 1}`}>
                 {i + 1}
               </span>
-              <span className="ranking__name" title={e.uid}>
-                {e.name}
-                <span className="ranking__uid">({shortUid(e.uid)})</span>
-                {e.uid === myUid && ' 나'}
+              <span className="ranking__info">
+                <span className="ranking__name" title={e.uid}>
+                  {e.name}
+                  <span className="ranking__uid">({shortUid(e.uid)})</span>
+                  {e.uid === myUid && ' 나'}
+                </span>
+                <Stats
+                  land={e.land}
+                  rabbits={e.rabbits}
+                  blackRabbits={e.blackRabbits}
+                />
               </span>
               <span className="ranking__coins">
                 <img src={coinIconUrl()} alt="" />
@@ -104,11 +140,18 @@ export default function Ranking() {
               <div className="ranking__gap">⋯</div>
               <div className="ranking__row is-me">
                 <span className="ranking__rank">{result.myRank}</span>
-                <span className="ranking__name" title={myUid}>
-                  나
-                  {myUid && (
-                    <span className="ranking__uid">({shortUid(myUid)})</span>
-                  )}
+                <span className="ranking__info">
+                  <span className="ranking__name" title={myUid}>
+                    나
+                    {myUid && (
+                      <span className="ranking__uid">({shortUid(myUid)})</span>
+                    )}
+                  </span>
+                  <Stats
+                    land={game.tiles.length}
+                    rabbits={game.rabbits}
+                    blackRabbits={game.blackRabbits}
+                  />
                 </span>
                 <span className="ranking__coins">
                   <img src={coinIconUrl()} alt="" />
