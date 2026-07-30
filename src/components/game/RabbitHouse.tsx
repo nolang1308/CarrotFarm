@@ -290,6 +290,124 @@ export default function RabbitHouse({ block }: RabbitHouseProps) {
   const doorOpen = useRef(0)
   const pollTimer = useRef(0)
 
+  /** 통행 가능한 칸 집합 (밭 타일 중 건물이 점유하지 않은 곳) */
+  const passableCells = (): Set<string> => {
+    const st = useGameStore.getState()
+    const set = new Set<string>()
+    for (const t of st.tiles) {
+      if (!isCellOccupied(st.buildings, t.x, t.z)) set.add(ck(t.x, t.z))
+    }
+    return set
+  }
+
+  /** (로컬 좌표) a→b 직선 구간이 전부 통행 칸 위인지 (경로 다듬기용) */
+  const canWalkStraight = (
+    ax: number,
+    az: number,
+    bx: number,
+    bz: number,
+    passable: Set<string>,
+  ): boolean => {
+    const d = Math.hypot(bx - ax, bz - az)
+    const steps = Math.max(1, Math.ceil(d / 0.2))
+    for (let i = 0; i <= steps; i++) {
+      const x = ax + ((bx - ax) * i) / steps
+      const z = az + ((bz - az) * i) / steps
+      if (!passable.has(ck(Math.round(x + cx), Math.round(z + cz)))) {
+        return false
+      }
+    }
+    return true
+  }
+
+  /**
+   * 밭 타일 위로만 걷는 경로 (그리드 BFS).
+   * 땅이 상하좌우로만 이어지는 규칙 덕에 두 타일 사이 경로는 항상 있고,
+   * 예외적으로 못 찾으면 기존 직선 우회(routeAround)로 폴백한다.
+   * 반환 좌표는 집 로컬 기준, 마지막 점은 정확한 목적지.
+   */
+  const buildTilePath = (
+    fromX: number,
+    fromZ: number,
+    toX: number,
+    toZ: number,
+    toGx: number,
+    toGz: number,
+  ): Array<[number, number]> => {
+    const passable = passableCells()
+
+    // 시작 셀 (문 앞처럼 타일 밖이면 인접 통행 칸으로 스냅)
+    let sx = Math.round(fromX + cx)
+    let sz = Math.round(fromZ + cz)
+    if (!passable.has(ck(sx, sz))) {
+      const near = (
+        [
+          [sx + 1, sz],
+          [sx - 1, sz],
+          [sx, sz + 1],
+          [sx, sz - 1],
+        ] as Array<[number, number]>
+      ).find(([a, b]) => passable.has(ck(a, b)))
+      if (near) [sx, sz] = near
+    }
+    if (!passable.has(ck(sx, sz)) || !passable.has(ck(toGx, toGz))) {
+      return routeAround(fromX, fromZ, toX, toZ)
+    }
+
+    // BFS (4방향)
+    const startKey = ck(sx, sz)
+    const goalKey = ck(toGx, toGz)
+    const prev = new Map<string, string | null>([[startKey, null]])
+    const coord = new Map<string, [number, number]>([[startKey, [sx, sz]]])
+    const queue: Array<[number, number]> = [[sx, sz]]
+    while (queue.length) {
+      const [x, z] = queue.shift()!
+      if (ck(x, z) === goalKey) break
+      for (const [nx, nz] of [
+        [x + 1, z],
+        [x - 1, z],
+        [x, z + 1],
+        [x, z - 1],
+      ] as Array<[number, number]>) {
+        const k = ck(nx, nz)
+        if (!passable.has(k) || prev.has(k)) continue
+        prev.set(k, ck(x, z))
+        coord.set(k, [nx, nz])
+        queue.push([nx, nz])
+      }
+    }
+    if (!prev.has(goalKey)) return routeAround(fromX, fromZ, toX, toZ)
+
+    // 경로 복원 (그리드 → 로컬)
+    const cells: Array<[number, number]> = []
+    let cur: string | null = goalKey
+    while (cur) {
+      const [gx, gz] = coord.get(cur)!
+      cells.push([gx - cx, gz - cz])
+      cur = prev.get(cur) ?? null
+    }
+    cells.reverse()
+
+    // 직선으로 이어도 타일을 벗어나지 않는 구간은 합쳐서 부드럽게
+    const pts: Array<[number, number]> = []
+    let from: [number, number] = [fromX, fromZ]
+    let i = 0
+    while (i < cells.length) {
+      let j = cells.length - 1
+      while (
+        j > i &&
+        !canWalkStraight(from[0], from[1], cells[j][0], cells[j][1], passable)
+      ) {
+        j--
+      }
+      pts.push(cells[j])
+      from = cells[j]
+      i = j + 1
+    }
+    pts[pts.length - 1] = [toX, toZ]
+    return pts
+  }
+
   /**
    * 현재 위치(px,pz)에서 가장 가까운, 아직 아무도 노리지 않은 일감 칸.
    * - harvest: 다 자란 당근
@@ -424,7 +542,7 @@ export default function RabbitHouse({ block }: RabbitHouseProps) {
         }
         claimed.add(ck(t.gx, t.gz))
         w.target = t
-        w.path = routeAround(ex, ez, t.x, t.z)
+        w.path = buildTilePath(ex, ez, t.x, t.z, t.gx, t.gz)
         w.pi = 0
         w.time = 0
         w.phase = 'moving'
@@ -473,18 +591,27 @@ export default function RabbitHouse({ block }: RabbitHouseProps) {
           if (t) {
             claimed.add(ck(t.gx, t.gz))
             w.target = t
-            w.path = routeAround(
+            w.path = buildTilePath(
               rabbit.position.x,
               rabbit.position.z,
               t.x,
               t.z,
+              t.gx,
+              t.gz,
             )
             w.pi = 0
             w.phase = 'moving'
           } else {
             const [ex, ez] = exitOf(i)
             w.target = null
-            w.path = routeAround(rabbit.position.x, rabbit.position.z, ex, ez)
+            w.path = buildTilePath(
+              rabbit.position.x,
+              rabbit.position.z,
+              ex,
+              ez,
+              Math.round(ex + cx),
+              Math.round(ez + cz),
+            )
             w.pi = 0
             w.phase = 'returning'
           }
