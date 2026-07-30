@@ -7,12 +7,12 @@ import {
   type RankingResult,
 } from '../../firebase/farmSync'
 import {
-  blackRabbitIconUrl,
   coinIconUrl,
   landIconUrl,
-  rabbitIconUrl,
+  speciesIconUrl,
   trophyIconUrl,
 } from '../../game/textures'
+import { countRole, speciesById } from '../../game/rabbitSpecies'
 import { useModalAnim } from '../../hooks/useModalAnim'
 import '../../styles/Ranking.scss'
 
@@ -36,9 +36,9 @@ function Stats({
     <span className="ranking__stats">
       <img src={landIconUrl()} alt="밭" />
       {land}
-      <img src={rabbitIconUrl()} alt="토끼" />
+      <img src={speciesIconUrl(speciesById('white'))} alt="토끼" />
       {rabbits}
-      <img src={blackRabbitIconUrl()} alt="검은 토끼" />
+      <img src={speciesIconUrl(speciesById('black'))} alt="씨앗 토끼" />
       {blackRabbits}
     </span>
   )
@@ -149,8 +149,8 @@ export default function Ranking() {
                   </span>
                   <Stats
                     land={game.tiles.length}
-                    rabbits={game.rabbits}
-                    blackRabbits={game.blackRabbits}
+                    rabbits={countRole(game.rabbitTypes, 'harvest')}
+                    blackRabbits={countRole(game.rabbitTypes, 'plant')}
                   />
                 </span>
                 <span className="ranking__coins">

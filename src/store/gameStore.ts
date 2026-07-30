@@ -1,4 +1,9 @@
 import { create } from 'zustand'
+import {
+  type RabbitRole,
+  countRole,
+  rollSpecies,
+} from '../game/rabbitSpecies'
 
 /** 하나의 밭 타일 상태 */
 export interface TileState {
@@ -169,8 +174,8 @@ export interface FarmSave {
   coins: number
   carrots: number
   seeds: number
-  rabbits: number
-  blackRabbits: number
+  /** 보유한 토끼들의 종 id 목록 (구매 순서) — 도감·역할·외형의 원본 */
+  rabbitTypes: string[]
   tiles: TileState[]
   buildings: Building[]
   /** 튜토리얼을 끝냈는지 (처음 로그인한 계정만 false) */
@@ -183,8 +188,7 @@ export function initialFarm(): FarmSave {
     coins: 10000,
     carrots: 0,
     seeds: 0,
-    rabbits: 0,
-    blackRabbits: 0,
+    rabbitTypes: [],
     tiles: createInitialTiles(),
     buildings: [{ id: 0, x: 0, z: 0, w: 2, h: 2, type: 'rabbit' }],
     tutorialDone: false,
@@ -197,8 +201,7 @@ export function snapshotFarm(s: FarmSave): FarmSave {
     coins: s.coins,
     carrots: s.carrots,
     seeds: s.seeds,
-    rabbits: s.rabbits,
-    blackRabbits: s.blackRabbits,
+    rabbitTypes: s.rabbitTypes,
     tiles: s.tiles,
     buildings: s.buildings,
     tutorialDone: s.tutorialDone,
@@ -242,10 +245,8 @@ interface GameState {
   tiles: TileState[]
   /** 밭 위 건물 목록 */
   buildings: Building[]
-  /** 보유한 토끼 마리수 (하나의 토끼집에서 이 수만큼 나온다) */
-  rabbits: number
-  /** 보유한 검은 토끼 마리수 (빈 밭을 찾아 알아서 씨앗을 심는다) */
-  blackRabbits: number
+  /** 보유한 토끼들의 종 id 목록 (역할·외형·도감의 원본) */
+  rabbitTypes: string[]
   /** 튜토리얼을 끝냈는지 (false 면 튜토리얼 오버레이 표시) */
   tutorialDone: boolean
   /** 진행 중인 수확 이펙트 목록 */
@@ -268,10 +269,11 @@ interface GameState {
   setPlacing: (placing: boolean) => void
   /** 해당 위치에 새 땅 생성 (이미 있으면·코인 부족이면 무시). 성공 여부 반환 */
   addTile: (x: number, z: number) => boolean
-  /** 토끼 한 마리 구매 (코인 부족이면 무시). 성공 여부 반환 */
-  addRabbit: () => boolean
-  /** 검은 토끼 한 마리 구매 (코인 부족이면 무시). 성공 여부 반환 */
-  addBlackRabbit: () => boolean
+  /**
+   * 토끼 뽑기 구매: 해당 역할 계열에서 랜덤 종이 나온다.
+   * 성공하면 뽑힌 종 id, 코인 부족이면 null 반환
+   */
+  buyRabbit: (role: RabbitRole) => string | null
   /** 씨앗 한 묶음 구매 (코인 부족이면 무시). 성공 여부 반환 */
   buySeeds: () => boolean
   /** 시장 UI 토글 */
@@ -282,6 +284,10 @@ interface GameState {
   toggleSettings: () => void
   /** 랭킹 UI 토글 */
   toggleRanking: () => void
+  /** 토끼 도감 UI 열림 여부 */
+  dexOpen: boolean
+  /** 토끼 도감 UI 토글 */
+  toggleDex: () => void
   /** 농장 관리 패널 토글 (집 클릭) */
   togglePanel: () => void
   /** 농장 관리 패널 닫기 */
@@ -309,6 +315,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   shopOpen: false,
   settingsOpen: false,
   rankingOpen: false,
+  dexOpen: false,
   panelOpen: false,
   harvestEffects: [],
   hydrated: false,
@@ -337,6 +344,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       shopOpen: false,
       settingsOpen: false,
       rankingOpen: false,
+      dexOpen: false,
       panelOpen: false,
     }),
 
@@ -350,25 +358,18 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setPlacing: (placing) => set({ isPlacing: placing }),
 
-  // 토끼 한 마리 구매 (마리수 증가). 하나의 집에서 이 수만큼 나온다.
-  addRabbit: () => {
+  // 토끼 뽑기 구매: 역할 계열 안에서 가중치 랜덤 종이 나온다 (가격은 역할별 보유 수 기준)
+  buyRabbit: (role) => {
     const state = get()
-    const cost = rabbitCost(state.rabbits)
-    if (state.coins < cost) return false
-    set({ rabbits: state.rabbits + 1, coins: state.coins - cost })
-    return true
-  },
-
-  // 검은 토끼 한 마리 구매 (빈 밭에 알아서 씨앗을 심는다)
-  addBlackRabbit: () => {
-    const state = get()
-    const cost = blackRabbitCost(state.blackRabbits)
-    if (state.coins < cost) return false
+    const owned = countRole(state.rabbitTypes, role)
+    const cost = role === 'harvest' ? rabbitCost(owned) : blackRabbitCost(owned)
+    if (state.coins < cost) return null
+    const species = rollSpecies(role)
     set({
-      blackRabbits: state.blackRabbits + 1,
+      rabbitTypes: [...state.rabbitTypes, species.id],
       coins: state.coins - cost,
     })
-    return true
+    return species.id
   },
 
   // 씨앗 한 묶음 구매
@@ -386,6 +387,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       shopOpen: false,
       settingsOpen: false,
       rankingOpen: false,
+      dexOpen: false,
       panelOpen: false,
     })),
 
@@ -395,6 +397,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       marketOpen: false,
       settingsOpen: false,
       rankingOpen: false,
+      dexOpen: false,
       panelOpen: false,
     })),
 
@@ -404,6 +407,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       marketOpen: false,
       shopOpen: false,
       rankingOpen: false,
+      dexOpen: false,
       panelOpen: false,
     })),
 
@@ -413,6 +417,17 @@ export const useGameStore = create<GameState>((set, get) => ({
       marketOpen: false,
       shopOpen: false,
       settingsOpen: false,
+      dexOpen: false,
+      panelOpen: false,
+    })),
+
+  toggleDex: () =>
+    set((state) => ({
+      dexOpen: !state.dexOpen,
+      marketOpen: false,
+      shopOpen: false,
+      settingsOpen: false,
+      rankingOpen: false,
       panelOpen: false,
     })),
 

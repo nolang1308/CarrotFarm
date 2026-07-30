@@ -2,28 +2,30 @@ import { useGameStore } from '../../store/gameStore'
 import { flushFarm } from '../../firebase/farmSync'
 import { useSaveToast } from '../../store/saveToast'
 import {
-  blackRabbitIconUrl,
   carrotIconUrl,
   landIconUrl,
   marketFrameUrl,
   marketIconUrl,
-  rabbitIconUrl,
   seedIconUrl,
   shopFrameUrl,
   shopIconUrl,
+  speciesIconUrl,
 } from '../../game/textures'
+import { countRole, speciesById } from '../../game/rabbitSpecies'
 import '../../styles/HouseMenu.scss'
 
 /** 집에 붙는 메뉴: 위=보유 자산(코인은 지붕 위 CoinBar), 왼쪽=시장, 오른쪽=상점 */
 export default function HouseMenu({ closing }: { closing: boolean }) {
   const carrots = useGameStore((s) => s.carrots)
   const seeds = useGameStore((s) => s.seeds)
-  const rabbits = useGameStore((s) => s.rabbits)
-  const blackRabbits = useGameStore((s) => s.blackRabbits)
+  const rabbitTypes = useGameStore((s) => s.rabbitTypes)
+  const rabbits = countRole(rabbitTypes, 'harvest')
+  const blackRabbits = countRole(rabbitTypes, 'plant')
   const land = useGameStore((s) => s.tiles.length)
   const toggleMarket = useGameStore((s) => s.toggleMarket)
   const toggleShop = useGameStore((s) => s.toggleShop)
   const toggleSettings = useGameStore((s) => s.toggleSettings)
+  const toggleDex = useGameStore((s) => s.toggleDex)
 
   return (
     <div className={`housemenu ${closing ? 'is-closing' : ''}`}>
@@ -37,12 +39,12 @@ export default function HouseMenu({ closing }: { closing: boolean }) {
           {seeds}
         </span>
         <span className="housemenu__chip">
-          <img src={rabbitIconUrl()} alt="토끼" />
+          <img src={speciesIconUrl(speciesById('white'))} alt="토끼" />
           {rabbits}
         </span>
         {blackRabbits > 0 && (
           <span className="housemenu__chip">
-            <img src={blackRabbitIconUrl()} alt="검은 토끼" />
+            <img src={speciesIconUrl(speciesById('black'))} alt="씨앗 토끼" />
             {blackRabbits}
           </span>
         )}
@@ -50,6 +52,13 @@ export default function HouseMenu({ closing }: { closing: boolean }) {
           <img src={landIconUrl()} alt="땅" />
           {land}
         </span>
+        <button
+          type="button"
+          className="housemenu__settings"
+          onClick={toggleDex}
+        >
+          도감
+        </button>
         <button
           type="button"
           className="housemenu__settings"

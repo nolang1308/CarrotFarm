@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore'
 import { auth, db } from './config'
 import type { Building, FarmSave, TileState } from '../store/gameStore'
+import { DEFAULT_SPECIES, countRole } from '../game/rabbitSpecies'
 
 /** Firestore 문서에 저장되는 타일 (undefined 불가 → plantedAt 은 null) */
 interface SavedTile {
@@ -62,8 +63,8 @@ export async function saveLeaderboard(
     name: displayName(),
     coins: farm.coins,
     land: farm.tiles.length,
-    rabbits: farm.rabbits,
-    blackRabbits: farm.blackRabbits,
+    rabbits: countRole(farm.rabbitTypes, 'harvest'),
+    blackRabbits: countRole(farm.rabbitTypes, 'plant'),
     updatedAt: Date.now(),
   })
 }
@@ -87,7 +88,11 @@ export async function saveFarm(uid: string, save: FarmSave): Promise<void> {
 export async function loadFarm(uid: string): Promise<FarmSave | null> {
   const snap = await getDoc(farmRef(uid))
   if (!snap.exists()) return null
-  const d = snap.data() as Partial<FarmDoc>
+  // 구버전 저장본은 rabbitTypes 대신 마리수(rabbits/blackRabbits)를 가짐
+  const d = snap.data() as Partial<FarmDoc> & {
+    rabbits?: number
+    blackRabbits?: number
+  }
 
   const tiles: TileState[] = (d.tiles ?? []).map((t) => ({
     x: t.x,
@@ -96,12 +101,19 @@ export async function loadFarm(uid: string): Promise<FarmSave | null> {
     plantedAt: t.plantedAt ?? undefined,
   }))
 
+  // 마이그레이션: 마리수만 있으면 기본종(흰/검은)으로 종 목록 구성
+  const rabbitTypes =
+    d.rabbitTypes ??
+    [
+      ...Array<string>(d.rabbits ?? 0).fill(DEFAULT_SPECIES.harvest),
+      ...Array<string>(d.blackRabbits ?? 0).fill(DEFAULT_SPECIES.plant),
+    ]
+
   return {
     coins: d.coins ?? 0,
     carrots: d.carrots ?? 0,
     seeds: d.seeds ?? 0,
-    rabbits: d.rabbits ?? 1,
-    blackRabbits: d.blackRabbits ?? 0,
+    rabbitTypes,
     tiles,
     buildings: (d.buildings ?? []) as Building[],
     // 예전 저장본에 필드가 없으면 튜토리얼 미완료로 취급

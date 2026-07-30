@@ -4,6 +4,7 @@ import Market from './components/ui/Market'
 import Shop from './components/ui/Shop'
 import Settings from './components/ui/Settings'
 import Ranking from './components/ui/Ranking'
+import Dex from './components/ui/Dex'
 import CoinDelta from './components/ui/CoinDelta'
 import SaveToast from './components/ui/SaveToast'
 import AuthScreen from './components/ui/AuthScreen'
@@ -50,6 +51,7 @@ function App() {
           <Shop />
           <Settings />
           <Ranking />
+          <Dex />
           {/* 코인 변동량(+/-)을 커서 위에 띄우는 플로팅 */}
           <CoinDelta />
           {/* 저장 알림 토스트 */}

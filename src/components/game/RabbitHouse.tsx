@@ -8,15 +8,16 @@ import HouseMenu from '../ui/HouseMenu'
 import CoinBar from '../ui/CoinBar'
 import { useModalAnim } from '../../hooks/useModalAnim'
 import {
-  BLACK_RABBIT_COLORS,
   HOUSE_COLORS,
-  RABBIT_COLORS,
-  blackRabbitFaceTexture,
   houseDoorwayTexture,
   houseWallTexture,
   houseWindowTexture,
-  rabbitFaceTexture,
+  speciesFaceTexture,
 } from '../../game/textures'
+import {
+  type RabbitSpecies,
+  speciesById,
+} from '../../game/rabbitSpecies'
 
 interface RabbitHouseProps {
   /** 2x2 블록의 시작(좌상단) 그리드 셀 */
@@ -208,9 +209,9 @@ function BunnyEar({
 }
 
 /** 3D 도트 토끼 모델 (가시성/위치/회전은 부모가 ref로 제어) */
-function RabbitModel({ black = false }: { black?: boolean }) {
-  const face = black ? blackRabbitFaceTexture() : rabbitFaceTexture()
-  const colors = black ? BLACK_RABBIT_COLORS : RABBIT_COLORS
+function RabbitModel({ species }: { species: RabbitSpecies }) {
+  const face = speciesFaceTexture(species)
+  const colors = species.palette
   const white = colors.body
   return (
     <>
@@ -258,9 +259,8 @@ export default function RabbitHouse({ block }: RabbitHouseProps) {
   const doorway = houseDoorwayTexture()
   const windowTex = houseWindowTexture()
   const interactTile = useGameStore((s) => s.interactTile)
-  const rabbits = useGameStore((s) => s.rabbits)
-  const blackRabbits = useGameStore((s) => s.blackRabbits)
-  const total = rabbits + blackRabbits
+  const rabbitTypes = useGameStore((s) => s.rabbitTypes)
+  const total = rabbitTypes.length
   const togglePanel = useGameStore((s) => s.togglePanel)
   const closePanel = useGameStore((s) => s.closePanel)
   const panelOpen = useGameStore((s) => s.panelOpen)
@@ -525,8 +525,8 @@ export default function RabbitHouse({ block }: RabbitHouseProps) {
       const rabbit = rabbitRefs.current[i]
       const w = workers.current[i]
       if (!rabbit || !w) continue
-      // 앞쪽 인덱스는 흰 토끼(수확), 뒤쪽은 검은 토끼(심기)
-      const job: Job = i < rabbits ? 'harvest' : 'plant'
+      // 역할은 각 토끼의 종이 정한다
+      const job: Job = speciesById(rabbitTypes[i]).role
 
       // idle: 일감이 있으면 파견
       if (w.phase === 'idle') {
@@ -685,8 +685,8 @@ export default function RabbitHouse({ block }: RabbitHouseProps) {
         </mesh>
       </group>
 
-      {/* 보유 마리수만큼의 3D 토끼 (앞=흰 토끼, 뒤=검은 토끼) */}
-      {Array.from({ length: total }).map((_, i) => (
+      {/* 보유한 토끼들 (각자 자기 종의 색으로) */}
+      {rabbitTypes.map((id, i) => (
         <group
           key={i}
           ref={(el) => {
@@ -694,7 +694,7 @@ export default function RabbitHouse({ block }: RabbitHouseProps) {
             if (el && workers.current[i]?.phase === undefined) el.visible = false
           }}
         >
-          <RabbitModel black={i >= rabbits} />
+          <RabbitModel species={speciesById(id)} />
         </group>
       ))}
 

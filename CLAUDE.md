@@ -27,6 +27,7 @@ React + TypeScript + SCSS + React Three Fiber(Three.js)로 만드는 아이소�
 ## 주요 파일
 
 - `src/game/textures.ts` — 모든 픽셀 텍스처 생성 (밭 흙, 잔디, 당근 성장 단계, 수확 아이콘, "+1" 라벨 등)
+- `src/game/rabbitSpecies.ts` — 토끼 종 도감 데이터 (10종 팔레트·희귀도·뽑기 가중치)
 - `src/game/farmView.ts` — 밭 재중심 애니메이션 공유 오프셋(`farmOffset`)
 - `src/game/dragState.ts` — 드래그 심기/수확 공유 플래그
 - `src/store/gameStore.ts` — 코인·당근·타일·성장·수확 이펙트 상태 (+`FarmSave` 저장 스냅샷/`hydrate`)

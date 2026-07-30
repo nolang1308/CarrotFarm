@@ -104,8 +104,7 @@ export default function FarmSync() {
         s.coins === prev.coins &&
         s.carrots === prev.carrots &&
         s.seeds === prev.seeds &&
-        s.rabbits === prev.rabbits &&
-        s.blackRabbits === prev.blackRabbits &&
+        s.rabbitTypes === prev.rabbitTypes &&
         s.buildings === prev.buildings &&
         s.tutorialDone === prev.tutorialDone &&
         !tilesPersistChanged(s.tiles, prev.tiles)

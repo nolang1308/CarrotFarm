@@ -9,12 +9,12 @@ import {
   useGameStore,
 } from '../../store/gameStore'
 import {
-  blackRabbitIconUrl,
   coinIconUrl,
   landIconUrl,
-  rabbitIconUrl,
   seedIconUrl,
+  speciesIconUrl,
 } from '../../game/textures'
+import { countRole, speciesById } from '../../game/rabbitSpecies'
 import { useModalAnim } from '../../hooks/useModalAnim'
 import '../../styles/Shop.scss'
 
@@ -26,16 +26,21 @@ export default function Shop() {
   const toggle = useGameStore((s) => s.toggleShop)
   const coins = useGameStore((s) => s.coins)
   const seeds = useGameStore((s) => s.seeds)
-  const rabbits = useGameStore((s) => s.rabbits)
-  const blackRabbits = useGameStore((s) => s.blackRabbits)
+  const rabbitTypes = useGameStore((s) => s.rabbitTypes)
   const land = useGameStore((s) => s.tiles.length)
   const buySeeds = useGameStore((s) => s.buySeeds)
-  const addRabbit = useGameStore((s) => s.addRabbit)
-  const addBlackRabbit = useGameStore((s) => s.addBlackRabbit)
+  const buyRabbit = useGameStore((s) => s.buyRabbit)
   const tutorialDone = useGameStore((s) => s.tutorialDone)
   const toggleBuildMode = useGameStore((s) => s.toggleBuildMode)
   const [tab, setTab] = useState<Tab>('seed')
   const { mounted, closing } = useModalAnim(open)
+  // 마지막으로 뽑은 토끼 (뽑기 결과 배너)
+  const [pull, setPull] = useState<{ id: string; isNew: boolean } | null>(null)
+
+  // 상점을 열 때마다 이전 뽑기 결과는 지움
+  useEffect(() => {
+    if (open) setPull(null)
+  }, [open])
 
   // 꾹 누르면 자동 연속 구매 (씨앗처럼 반복 구매하는 소모품 전용)
   const holdTimeout = useRef(0)
@@ -50,9 +55,19 @@ export default function Shop() {
   if (!mounted) return null
 
   // 영구 자산은 살 때마다 가격이 오름 → 현재 보유 수 기준 다음 가격
+  const rabbits = countRole(rabbitTypes, 'harvest')
+  const blackRabbits = countRole(rabbitTypes, 'plant')
   const landCost = tileCost(land)
   const nextRabbitCost = rabbitCost(rabbits)
   const nextBlackRabbitCost = blackRabbitCost(blackRabbits)
+
+  /** 토끼 뽑기: 결과 배너 갱신 (처음 만난 종이면 NEW) */
+  const doGacha = (role: 'harvest' | 'plant') => {
+    const before = useGameStore.getState().rabbitTypes
+    const id = buyRabbit(role)
+    if (!id) return
+    setPull({ id, isNew: !before.includes(id) })
+  }
 
   // 다 자랄 때까지 걸리는 시간 표기 (튜토리얼 중에는 빠른 시간 그대로 표시)
   const growTotal = growTotalMs(tutorialDone)
@@ -90,24 +105,24 @@ export default function Shop() {
           }
         : tab === 'rabbit'
           ? {
-              icon: rabbitIconUrl(),
-              name: '토끼',
+              icon: speciesIconUrl(speciesById('white')),
+              name: '수확 토끼 뽑기',
               owned: `보유 ${rabbits}마리`,
-              desc: '집에서 나와 다 자란 당근을 알아서 대신 수확해 줍니다. 살수록 비싸져요.',
-              buyText: '토끼 1마리',
+              desc: '다 자란 당근을 대신 수확해 줍니다. 다섯 종 중 누가 나올지는 뽑기 운! 살수록 비싸져요.',
+              buyText: '토끼 뽑기',
               cost: nextRabbitCost,
               canBuy: coins >= nextRabbitCost,
-              onBuy: addRabbit,
+              onBuy: () => doGacha('harvest'),
             }
           : {
-              icon: blackRabbitIconUrl(),
-              name: '검은 토끼',
+              icon: speciesIconUrl(speciesById('black')),
+              name: '씨앗 토끼 뽑기',
               owned: `보유 ${blackRabbits}마리`,
-              desc: '집에서 나와 빈 밭을 찾아 알아서 씨앗을 심어 줍니다. 살수록 비싸져요.',
-              buyText: '검은 토끼 1마리',
+              desc: '빈 밭을 찾아 알아서 씨앗을 심어 줍니다. 다섯 종 중 누가 나올지는 뽑기 운! 살수록 비싸져요.',
+              buyText: '토끼 뽑기',
               cost: nextBlackRabbitCost,
               canBuy: coins >= nextBlackRabbitCost,
-              onBuy: addBlackRabbit,
+              onBuy: () => doGacha('plant'),
             }
 
   // 항상 최신 구매 액션을 가리키게 (홀드 인터벌이 이전 탭 액션을 잡지 않도록)
@@ -159,7 +174,7 @@ export default function Shop() {
             className={`shop__tab ${tab === 'rabbit' ? 'is-active' : ''}`}
             onClick={() => setTab('rabbit')}
           >
-            <img src={rabbitIconUrl()} alt="" />
+            <img src={speciesIconUrl(speciesById('white'))} alt="" />
             토끼
           </button>
           <button
@@ -167,8 +182,8 @@ export default function Shop() {
             className={`shop__tab ${tab === 'blackRabbit' ? 'is-active' : ''}`}
             onClick={() => setTab('blackRabbit')}
           >
-            <img src={blackRabbitIconUrl()} alt="" />
-            검은 토끼
+            <img src={speciesIconUrl(speciesById('black'))} alt="" />
+            씨앗 토끼
           </button>
         </div>
 
@@ -199,6 +214,20 @@ export default function Shop() {
               {item.cost}
             </span>
           </button>
+
+          {/* 뽑기 결과: 방금 나온 토끼 */}
+          {pull && (tab === 'rabbit' || tab === 'blackRabbit') && (
+            <div className="shop__pull" key={pull.id + String(pull.isNew)}>
+              <img src={speciesIconUrl(speciesById(pull.id))} alt="" />
+              <span className="shop__pull-name">
+                {speciesById(pull.id).name}
+              </span>
+              {speciesById(pull.id).rarity === 'rare' && (
+                <span className="shop__pull-rare">★</span>
+              )}
+              {pull.isNew && <span className="shop__pull-new">NEW!</span>}
+            </div>
+          )}
         </div>
 
         <button type="button" className="shop__close" onClick={toggle}>

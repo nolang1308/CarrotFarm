@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import type { RabbitPalette, RabbitSpecies } from './rabbitSpecies'
 
 /**
  * 도트(픽셀) 그래픽 텍스처 생성기.
@@ -792,47 +793,8 @@ export const houseWindowTexture = (): THREE.CanvasTexture =>
   (_wallWindow ??= buildWall(drawWallWindow))
 
 // ===================================================================
-// 토끼 얼굴 텍스처 (3D 토끼 머리 정면에 입힘)
+// 토끼 얼굴 텍스처 (3D 토끼 머리 정면에 입힘) — 종별 팔레트는 rabbitSpecies.ts
 // ===================================================================
-/** 토끼 한 종의 도트 팔레트 (얼굴 텍스처·아이콘·3D 몸통 색 공용) */
-interface RabbitPalette {
-  body: string
-  eye: string
-  nose: string
-  cheek: string
-  ear: string
-}
-
-/** 흰 토끼 (수확 담당) */
-const RABBIT: RabbitPalette = {
-  body: '#fdfdfd',
-  eye: '#5a4655',
-  nose: '#ef8fa3',
-  cheek: '#ffc7d5',
-  ear: '#f7b5c4',
-}
-
-/** 검은 토끼 (씨앗 심기 담당). 어두운 몸이라 눈은 밝게 */
-const BLACK_RABBIT: RabbitPalette = {
-  body: '#464050',
-  eye: '#f5f0f7',
-  nose: '#ef8fa3',
-  cheek: '#6d5f75',
-  ear: '#8d7f9c',
-}
-
-/** 3D 토끼 몸/귀/귀안쪽 색 */
-export const RABBIT_COLORS = {
-  body: RABBIT.body,
-  ear: RABBIT.ear,
-}
-
-/** 3D 검은 토끼 몸/귀안쪽 색 */
-export const BLACK_RABBIT_COLORS = {
-  body: BLACK_RABBIT.body,
-  ear: BLACK_RABBIT.ear,
-}
-
 function drawRabbitFace(pc: PixelCanvas, c: RabbitPalette): void {
   fillRect(pc, 0, 0, 15, 15, c.body)
   // 눈
@@ -845,21 +807,25 @@ function drawRabbitFace(pc: PixelCanvas, c: RabbitPalette): void {
   // 볼 홍조
   fillRect(pc, 2, 10, 3, 11, c.cheek)
   fillRect(pc, 12, 10, 13, 11, c.cheek)
+  // 종별 점무늬
+  if (c.spotColor && c.spots) {
+    for (const [x, y] of c.spots) dot(pc, x, y, c.spotColor)
+  }
 }
 
-function buildRabbitFace(c: RabbitPalette): THREE.CanvasTexture {
-  const pc = makeCanvas(16, 8)
-  drawRabbitFace(pc, c)
-  return toTexture(pc.canvas)
+const _speciesFaces = new Map<string, THREE.CanvasTexture>()
+
+/** 종별 얼굴 텍스처 (종 id 로 캐시) */
+export function speciesFaceTexture(sp: RabbitSpecies): THREE.CanvasTexture {
+  let tex = _speciesFaces.get(sp.id)
+  if (!tex) {
+    const pc = makeCanvas(16, 8)
+    drawRabbitFace(pc, sp.palette)
+    tex = toTexture(pc.canvas)
+    _speciesFaces.set(sp.id, tex)
+  }
+  return tex
 }
-
-let _rabbitFace: THREE.CanvasTexture | null = null
-let _blackRabbitFace: THREE.CanvasTexture | null = null
-
-export const rabbitFaceTexture = (): THREE.CanvasTexture =>
-  (_rabbitFace ??= buildRabbitFace(RABBIT))
-export const blackRabbitFaceTexture = (): THREE.CanvasTexture =>
-  (_blackRabbitFace ??= buildRabbitFace(BLACK_RABBIT))
 
 /** 픽셀 트로피 (랭킹 버튼) */
 function drawTrophyIcon(pc: PixelCanvas): void {
@@ -913,12 +879,21 @@ function drawRabbitIcon(pc: PixelCanvas, c: RabbitPalette): void {
   // 볼
   dot(pc, 4, 10, c.cheek)
   dot(pc, 11, 10, c.cheek)
+  // 종별 점무늬 (아이콘은 이마·볼에 고정 위치)
+  if (c.spotColor) {
+    dot(pc, 5, 7, c.spotColor)
+    dot(pc, 10, 12, c.spotColor)
+  }
 }
 
-let _rabbitUrl: string | null = null
-let _blackRabbitUrl: string | null = null
+const _speciesIcons = new Map<string, string>()
 
-export const rabbitIconUrl = (): string =>
-  (_rabbitUrl ??= buildIconDataUrl((pc) => drawRabbitIcon(pc, RABBIT)))
-export const blackRabbitIconUrl = (): string =>
-  (_blackRabbitUrl ??= buildIconDataUrl((pc) => drawRabbitIcon(pc, BLACK_RABBIT)))
+/** 종별 머리 아이콘 data URL (도감·상점·HUD 용, 종 id 로 캐시) */
+export function speciesIconUrl(sp: RabbitSpecies): string {
+  let url = _speciesIcons.get(sp.id)
+  if (!url) {
+    url = buildIconDataUrl((pc) => drawRabbitIcon(pc, sp.palette))
+    _speciesIcons.set(sp.id, url)
+  }
+  return url
+}

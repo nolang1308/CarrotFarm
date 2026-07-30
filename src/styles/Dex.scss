@@ -1,0 +1,114 @@
+@use './variables' as *;
+
+.dex {
+  position: absolute;
+  inset: 0;
+  z-index: $z-hud + 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  pointer-events: auto;
+
+  &.is-closing {
+    pointer-events: none;
+  }
+
+  &__panel {
+    position: relative;
+    width: 380px;
+    max-height: 520px;
+    overflow-y: auto;
+    padding: 20px 18px 16px;
+    background: #fffdf7;
+    clip-path: $notch;
+    color: #43382e;
+    animation: popIn 0.26s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+
+    &.is-closing {
+      animation: popOut 0.2s ease-in both;
+    }
+  }
+
+  &__title {
+    font-size: 18px;
+    text-align: center;
+  }
+
+  &__progress {
+    margin: 6px 0 12px;
+    font-size: 12px;
+    text-align: center;
+    color: #9a8a76;
+  }
+
+  &__section {
+    margin: 10px 0 6px;
+    font-size: 13px;
+    color: #7a5320;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 4px 6px;
+    background: #f4ead2;
+    border: 2px solid #d9c091;
+    text-align: center;
+
+    &.is-found {
+      background: #fff7e0;
+      border-color: #e0a92e;
+    }
+  }
+
+  &__portrait {
+    width: 34px;
+    height: 34px;
+    image-rendering: pixelated;
+
+    // 미발견: 검은 실루엣
+    &.is-silhouette {
+      filter: brightness(0) opacity(0.75);
+    }
+  }
+
+  &__name {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  &__rare {
+    margin-left: 2px;
+    color: #e0a92e;
+  }
+
+  &__desc {
+    min-height: 40px;
+    font-size: 9px;
+    line-height: 1.5;
+    color: #8a7a68;
+    word-break: keep-all;
+  }
+
+  &__count {
+    font-size: 10px;
+    color: #7a5320;
+  }
+
+  &__close {
+    @include pixel-button(#a58c6a);
+    width: 100%;
+    margin-top: 14px;
+    padding: 11px 0;
+    font-size: 15px;
+  }
+}
