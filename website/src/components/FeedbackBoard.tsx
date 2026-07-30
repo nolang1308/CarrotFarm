@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react'
-import { fetchFeedback, submitFeedback, type Feedback } from '../feedback'
+import { fetchFeedback, submitFeedback, type Feedback } from '../api'
 import '../styles/FeedbackBoard.scss'
 
 function formatDate(ms: number): string {

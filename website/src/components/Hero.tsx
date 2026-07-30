@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { blackRabbitUrl, carrotUrl, rabbitUrl } from '../pixel'
-import { fetchFarmerCount } from '../feedback'
+import { fetchFarmerCount } from '../api'
 import '../styles/Hero.scss'
 
 /** 첫 화면: 도트 당근 + 소개 문구 + 농부 수 */
