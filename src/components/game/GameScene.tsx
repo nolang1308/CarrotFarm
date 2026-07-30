@@ -9,7 +9,29 @@ import ViewPanGroup from './ViewPanGroup'
 import TutorialProjector from './TutorialProjector'
 import { useGameStore } from '../../store/gameStore'
 import { harvestDrag, plantDrag } from '../../game/dragState'
+import { hoverPoint } from '../../game/hoverPoint'
+import { useFrame } from '@react-three/fiber'
+import * as THREE from 'three'
 import '../../styles/GameScene.scss'
+
+const _origin = new THREE.Vector3()
+const _dir = new THREE.Vector3()
+
+/**
+ * 커서가 가리키는 밭 평면(y=0.2, 타일 윗면) 위 월드 좌표를 매 프레임 계산해
+ * hoverPoint 에 기록한다. 렌더링 없음.
+ */
+function HoverTracker() {
+  useFrame(({ camera, pointer }) => {
+    _origin.set(pointer.x, pointer.y, -1).unproject(camera)
+    camera.getWorldDirection(_dir)
+    if (Math.abs(_dir.y) < 1e-6) return
+    const t = (0.2 - _origin.y) / _dir.y
+    hoverPoint.x = _origin.x + _dir.x * t
+    hoverPoint.z = _origin.z + _dir.z * t
+  })
+  return null
+}
 
 /**
  * 아이소메트릭 뷰의 핵심:
@@ -36,6 +58,8 @@ export default function GameScene() {
     <div
       className="game-scene"
       onContextMenu={(e) => e.preventDefault()}
+      onPointerMove={() => (hoverPoint.active = true)}
+      onPointerLeave={() => (hoverPoint.active = false)}
     >
       <Canvas
         orthographic
@@ -74,6 +98,9 @@ export default function GameScene() {
 
         {/* 튜토리얼 포커스용 화면 좌표 계산 (렌더링 없음) */}
         <TutorialProjector />
+
+        {/* 커서의 밭 평면 좌표 추적 (성장 게이지 표시 범위 판정용) */}
+        <HoverTracker />
 
         {/* 위젯 모드: 회전/이동은 잠그고, 휠로 땅 확대/축소만 허용.
             축소 한계 없음(minZoom 아주 작게), 확대는 창이 디스플레이에 닿으면

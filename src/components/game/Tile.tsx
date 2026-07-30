@@ -84,6 +84,8 @@ export default function Tile({ tile, position, occupied = false }: TileProps) {
       {tile.growth > 0 && (
         <Carrot
           growth={tile.growth}
+          gx={tile.x}
+          gz={tile.z}
           plantedAt={tile.plantedAt}
           sparklePhase={sparklePhaseFor(tile.x, tile.z)}
         />
