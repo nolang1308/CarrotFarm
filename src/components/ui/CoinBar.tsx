@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGameStore } from '../../store/gameStore'
-import { coinIconUrl } from '../../game/textures'
+import { coinIconUrl, trophyIconUrl } from '../../game/textures'
 import '../../styles/CoinBar.scss'
 
 /** 잔액이 목표값까지 굴러가는 시간(ms) */
@@ -14,6 +14,7 @@ const COUNT_MS = 700
  */
 export default function CoinBar() {
   const coins = useGameStore((s) => s.coins)
+  const toggleRanking = useGameStore((s) => s.toggleRanking)
 
   // 표시용 숫자 (실제 잔액을 향해 이징으로 굴러감)
   const [shown, setShown] = useState(coins)
@@ -42,6 +43,14 @@ export default function CoinBar() {
     <div className="coinbar">
       <img src={coinIconUrl()} alt="코인" />
       {shown.toLocaleString('en-US')}
+      <button
+        type="button"
+        className="coinbar__rank"
+        onClick={toggleRanking}
+        title="랭킹"
+      >
+        <img src={trophyIconUrl()} alt="랭킹" />
+      </button>
     </div>
   )
 }

@@ -1,7 +1,12 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '../../store/authStore'
 import { snapshotFarm, useGameStore } from '../../store/gameStore'
-import { loadFarm, registerFarmFlusher, saveFarm } from '../../firebase/farmSync'
+import {
+  loadFarm,
+  registerFarmFlusher,
+  saveFarm,
+  saveLeaderboard,
+} from '../../firebase/farmSync'
 
 /** 변경 후 저장까지의 지연 (연속 조작을 한 번의 쓰기로 묶음) */
 const SAVE_DEBOUNCE_MS = 2000
@@ -28,7 +33,12 @@ export default function FarmSync() {
     const tryLoad = () => {
       loadFarm(uid)
         .then((save) => {
-          if (alive) useGameStore.getState().hydrate(save)
+          if (!alive) return
+          useGameStore.getState().hydrate(save)
+          // 아무 변경 없이 접속만 해도 랭킹에 보이도록 프로필 갱신 (최선 노력)
+          void saveLeaderboard(uid, useGameStore.getState().coins).catch(
+            () => {},
+          )
         })
         .catch((err) => {
           // 오프라인 등 일시 오류: 초기화 상태로 덮어쓰지 않고 재시도만 한다

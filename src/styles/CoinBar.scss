@@ -20,4 +20,33 @@
     height: 22px;
     image-rendering: pixelated;
   }
+
+  // 랭킹 버튼 (코인바 자체는 클릭 통과라 버튼만 받는다)
+  &__rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    padding: 2px;
+    background: #ffd873;
+    border: 2px solid #7a5320;
+    border-radius: 0;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 1px 1px 0 rgba(46, 32, 16, 0.3);
+
+    img {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      filter: brightness(1.06);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+  }
 }

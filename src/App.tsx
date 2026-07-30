@@ -3,6 +3,7 @@ import BuildBar from './components/ui/BuildBar'
 import Market from './components/ui/Market'
 import Shop from './components/ui/Shop'
 import Settings from './components/ui/Settings'
+import Ranking from './components/ui/Ranking'
 import CoinDelta from './components/ui/CoinDelta'
 import AuthScreen from './components/ui/AuthScreen'
 import Tutorial from './components/ui/Tutorial'
@@ -47,6 +48,7 @@ function App() {
           <Market />
           <Shop />
           <Settings />
+          <Ranking />
           {/* 코인 변동량(+/-)을 커서 위에 띄우는 플로팅 */}
           <CoinDelta />
           {/* 첫 로그인 튜토리얼 (완료한 계정이면 아무것도 안 그림) */}

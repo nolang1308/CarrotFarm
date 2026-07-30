@@ -795,6 +795,35 @@ export const rabbitFaceTexture = (): THREE.CanvasTexture =>
 export const blackRabbitFaceTexture = (): THREE.CanvasTexture =>
   (_blackRabbitFace ??= buildRabbitFace(BLACK_RABBIT))
 
+/** 픽셀 트로피 (랭킹 버튼) */
+function drawTrophyIcon(pc: PixelCanvas): void {
+  const g = '#ffd24a'
+  const gl = '#ffe89a'
+  const gd = '#e0a92e'
+  const base = '#a9761f'
+  // 컵 테두리 + 몸통
+  fillRect(pc, 5, 3, 10, 3, gd)
+  fillRect(pc, 5, 4, 10, 7, g)
+  // 손잡이
+  dot(pc, 4, 4, g)
+  dot(pc, 11, 4, g)
+  dot(pc, 4, 5, gd)
+  dot(pc, 11, 5, gd)
+  // 하이라이트 / 음영
+  dot(pc, 6, 4, gl)
+  dot(pc, 6, 5, gl)
+  dot(pc, 9, 7, gd)
+  // 목 + 받침
+  fillRect(pc, 6, 8, 9, 8, gd)
+  fillRect(pc, 7, 9, 8, 10, gd)
+  fillRect(pc, 5, 11, 10, 12, base)
+}
+
+let _trophyUrl: string | null = null
+
+export const trophyIconUrl = (): string =>
+  (_trophyUrl ??= buildIconDataUrl(drawTrophyIcon))
+
 /** HUD용 픽셀 토끼 머리 아이콘 */
 function drawRabbitIcon(pc: PixelCanvas, c: RabbitPalette): void {
   const body = c.body

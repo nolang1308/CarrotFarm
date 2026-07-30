@@ -1,5 +1,16 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { db } from './config'
+import {
+  collection,
+  doc,
+  getCountFromServer,
+  getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  setDoc,
+  where,
+} from 'firebase/firestore'
+import { auth, db } from './config'
 import type { Building, FarmSave, TileState } from '../store/gameStore'
 
 /** Firestore 문서에 저장되는 타일 (undefined 불가 → plantedAt 은 null) */
@@ -34,7 +45,24 @@ export async function flushFarm(): Promise<void> {
   if (farmFlusher) await farmFlusher()
 }
 
-/** 농장 저장 (문서 전체 덮어쓰기) */
+/** 랭킹 표시용 이름 (이메일 앞부분) */
+function displayName(): string {
+  return auth.currentUser?.email?.split('@')[0] ?? '농부'
+}
+
+/** 랭킹용 공개 프로필(이름·코인) 갱신 */
+export async function saveLeaderboard(
+  uid: string,
+  coins: number,
+): Promise<void> {
+  await setDoc(doc(db, 'leaderboard', uid), {
+    name: displayName(),
+    coins,
+    updatedAt: Date.now(),
+  })
+}
+
+/** 농장 저장 (문서 전체 덮어쓰기) + 랭킹 프로필 동시 갱신 */
 export async function saveFarm(uid: string, save: FarmSave): Promise<void> {
   const data: FarmDoc = {
     ...save,
@@ -46,7 +74,10 @@ export async function saveFarm(uid: string, save: FarmSave): Promise<void> {
     })),
     updatedAt: Date.now(),
   }
-  await setDoc(farmRef(uid), data)
+  await Promise.all([
+    setDoc(farmRef(uid), data),
+    saveLeaderboard(uid, save.coins),
+  ])
 }
 
 /** 농장 불러오기. 저장본이 없으면(새 계정) null */
@@ -75,4 +106,56 @@ export async function loadFarm(uid: string): Promise<FarmSave | null> {
     // 예전 저장본에 필드가 없으면 튜토리얼 미완료로 취급
     tutorialDone: d.tutorialDone ?? false,
   }
+}
+
+// ===== 랭킹 =====
+
+export interface RankEntry {
+  uid: string
+  name: string
+  coins: number
+}
+
+export interface RankingResult {
+  /** 코인 내림차순 상위 목록 */
+  entries: RankEntry[]
+  /** 내 순위 (1부터) */
+  myRank: number
+  /** 전체 참가자 수 */
+  total: number
+}
+
+/** 상위 목록으로 가져올 인원 */
+const RANKING_LIMIT = 50
+
+/**
+ * 랭킹 조회: 코인 내림차순 상위 목록 + 내 순위.
+ * 내가 상위 목록 밖이면 "나보다 코인 많은 사람 수 + 1" 집계로 순위를 구한다.
+ */
+export async function fetchRanking(
+  uid: string,
+  myCoins: number,
+): Promise<RankingResult> {
+  const board = collection(db, 'leaderboard')
+  const [topSnap, totalSnap] = await Promise.all([
+    getDocs(query(board, orderBy('coins', 'desc'), limit(RANKING_LIMIT))),
+    getCountFromServer(board),
+  ])
+  const entries: RankEntry[] = topSnap.docs.map((d) => {
+    const data = d.data() as { name?: string; coins?: number }
+    return { uid: d.id, name: data.name ?? '농부', coins: data.coins ?? 0 }
+  })
+
+  const idx = entries.findIndex((e) => e.uid === uid)
+  let myRank: number
+  if (idx >= 0) {
+    myRank = idx + 1
+  } else {
+    const higher = await getCountFromServer(
+      query(board, where('coins', '>', myCoins)),
+    )
+    myRank = higher.data().count + 1
+  }
+
+  return { entries, myRank, total: totalSnap.data().count }
 }
