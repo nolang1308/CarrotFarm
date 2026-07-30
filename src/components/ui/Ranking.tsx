@@ -13,6 +13,9 @@ import '../../styles/Ranking.scss'
 /** 목록에 보여줄 상위 인원 */
 const SHOW_TOP = 10
 
+/** 닉네임은 중복될 수 있어서 UID 앞부분으로 구분 (전체는 툴팁) */
+const shortUid = (uid: string) => uid.slice(0, 6)
+
 /** 랭킹 모달: 코인 자산 기준 상위 목록 + 내 순위 */
 export default function Ranking() {
   const open = useGameStore((s) => s.rankingOpen)
@@ -83,9 +86,10 @@ export default function Ranking() {
               <span className={`ranking__rank ranking__rank--${i + 1}`}>
                 {i + 1}
               </span>
-              <span className="ranking__name">
+              <span className="ranking__name" title={e.uid}>
                 {e.name}
-                {e.uid === myUid && ' (나)'}
+                <span className="ranking__uid">({shortUid(e.uid)})</span>
+                {e.uid === myUid && ' 나'}
               </span>
               <span className="ranking__coins">
                 <img src={coinIconUrl()} alt="" />
@@ -100,7 +104,12 @@ export default function Ranking() {
               <div className="ranking__gap">⋯</div>
               <div className="ranking__row is-me">
                 <span className="ranking__rank">{result.myRank}</span>
-                <span className="ranking__name">나</span>
+                <span className="ranking__name" title={myUid}>
+                  나
+                  {myUid && (
+                    <span className="ranking__uid">({shortUid(myUid)})</span>
+                  )}
+                </span>
                 <span className="ranking__coins">
                   <img src={coinIconUrl()} alt="" />
                   {myCoins.toLocaleString('en-US')}

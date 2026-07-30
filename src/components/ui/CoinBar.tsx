@@ -49,7 +49,7 @@ export default function CoinBar() {
         onClick={toggleRanking}
         title="랭킹"
       >
-        <img src={trophyIconUrl()} alt="랭킹" />
+        <img src={trophyIconUrl()} alt="자산 랭킹" />
       </button>
     </div>
   )
