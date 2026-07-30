@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   SEED_COST,
   SEED_PACK,
@@ -36,6 +36,16 @@ export default function Shop() {
   const toggleBuildMode = useGameStore((s) => s.toggleBuildMode)
   const [tab, setTab] = useState<Tab>('seed')
   const { mounted, closing } = useModalAnim(open)
+
+  // 꾹 누르면 자동 연속 구매 (씨앗처럼 반복 구매하는 소모품 전용)
+  const holdTimeout = useRef(0)
+  const holdInterval = useRef(0)
+  const buyRef = useRef<() => void>(() => {})
+  const stopHold = () => {
+    window.clearTimeout(holdTimeout.current)
+    window.clearInterval(holdInterval.current)
+  }
+  useEffect(() => stopHold, [])
 
   if (!mounted) return null
 
@@ -99,6 +109,19 @@ export default function Shop() {
               canBuy: coins >= nextBlackRabbitCost,
               onBuy: addBlackRabbit,
             }
+
+  // 항상 최신 구매 액션을 가리키게 (홀드 인터벌이 이전 탭 액션을 잡지 않도록)
+  buyRef.current = () => item.onBuy()
+
+  /** 누르는 순간 1회 구매 + (씨앗 탭이면) 꾹 누르는 동안 연속 구매 */
+  const handleBuyDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    buyRef.current()
+    if (tab !== 'seed') return // 영구 자산·땅은 클릭당 1회
+    holdTimeout.current = window.setTimeout(() => {
+      holdInterval.current = window.setInterval(() => buyRef.current(), 90)
+    }, 350)
+  }
 
   return (
     <div className={`shop ${closing ? 'is-closing' : ''}`} onClick={toggle}>
@@ -165,7 +188,10 @@ export default function Shop() {
             type="button"
             className="shop__buy"
             disabled={!item.canBuy}
-            onClick={() => item.onBuy()}
+            onPointerDown={handleBuyDown}
+            onPointerUp={stopHold}
+            onPointerLeave={stopHold}
+            onPointerCancel={stopHold}
           >
             <span className="shop__buy-text">{item.buyText} 구매</span>
             <span className="shop__buy-price">
