@@ -2,6 +2,7 @@ import Hero from './components/Hero'
 import Features from './components/Features'
 import HowTo from './components/HowTo'
 import Download from './components/Download'
+import FeedbackBoard from './components/FeedbackBoard'
 import Footer from './components/Footer'
 import './styles/App.scss'
 
@@ -13,6 +14,7 @@ export default function App() {
       <Download />
       <Features />
       <HowTo />
+      <FeedbackBoard />
       <Footer />
     </div>
   )

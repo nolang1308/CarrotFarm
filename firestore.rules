@@ -12,5 +12,20 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == uid;
     }
+
+    // 베타 피드백: 웹사이트 방문자(비로그인)도 작성·열람 가능.
+    // 필드·길이를 엄격히 검증하고, 수정·삭제는 아무도 못 함.
+    match /feedback/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['name', 'message', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1
+        && request.resource.data.name.size() <= 20
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 2
+        && request.resource.data.message.size() <= 500
+        && request.resource.data.createdAt is int;
+      allow update, delete: if false;
+    }
   }
 }

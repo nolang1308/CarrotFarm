@@ -41,6 +41,19 @@
       -1px -1px 0 rgba(255, 255, 255, 0.12);
   }
 
+  &__beta {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    color: #2c2013;
+    background: $color-yellow;
+    border: 2px solid $color-brown;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+    transform: translateY(-6px);
+  }
+
   &__tagline {
     margin-top: 12px;
     font-size: 20px;

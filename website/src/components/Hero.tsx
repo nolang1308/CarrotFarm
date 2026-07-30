@@ -11,7 +11,9 @@ export default function Hero() {
         <img className="hero__rabbit" src={blackRabbitUrl()} alt="" />
       </div>
 
-      <h1 className="hero__title">당근농장</h1>
+      <h1 className="hero__title">
+        당근농장 <span className="hero__beta">BETA</span>
+      </h1>
       <p className="hero__tagline">바탕화면 위에서 자라는 도트 당근 농장 위젯</p>
       <p className="hero__sub">
         창 테두리도, 배경도 없이 바탕화면에 살포시 얹히는 작은 밭.
