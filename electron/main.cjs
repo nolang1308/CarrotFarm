@@ -172,6 +172,9 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
+      // 위젯이 다른 창에 가려지거나 포커스를 잃어도 게임 루프(토끼·시세·성장 틱)가
+      // 멈추지 않게 백그라운드 스로틀링을 끈다
+      backgroundThrottling: false,
     },
   })
 
