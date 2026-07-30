@@ -406,7 +406,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       const target = state.tiles.find((t) => t.x === x && t.z === z)
       if (!target) return {}
 
-      // 다 자란 당근 수확 → 코인·당근 지급 + 이펙트
+      // 다 자란 당근 수확 → 당근 지급 + 이펙트 (돈은 시장에 팔아야 벌린다)
       if (target.growth === RIPE_STAGE) {
         const tiles = state.tiles.map((t) =>
           t.x === x && t.z === z
@@ -416,7 +416,6 @@ export const useGameStore = create<GameState>((set, get) => ({
         return {
           tiles,
           carrots: state.carrots + 1,
-          coins: state.coins + 10,
           harvestEffects: [...state.harvestEffects, { id: nextFxId++, x, z }],
         }
       }
