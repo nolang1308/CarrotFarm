@@ -1,8 +1,17 @@
+import { useEffect, useState } from 'react'
 import { blackRabbitUrl, carrotUrl, rabbitUrl } from '../pixel'
+import { fetchFarmerCount } from '../feedback'
 import '../styles/Hero.scss'
 
-/** 첫 화면: 도트 당근 + 소개 문구 + 다운로드 이동 버튼 */
+/** 첫 화면: 도트 당근 + 소개 문구 + 농부 수 */
 export default function Hero() {
+  const [farmers, setFarmers] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetchFarmerCount()
+      .then(setFarmers)
+      .catch(() => {}) // 실패하면 그냥 안 보여줌
+  }, [])
   return (
     <header className="hero">
       <div className="hero__art">
@@ -20,6 +29,13 @@ export default function Hero() {
         <br />
         씨앗을 심고, 기다리고, 수확해서 시세 좋은 날 내다 파세요.
       </p>
+
+      {farmers != null && farmers > 0 && (
+        <p className="hero__farmers">
+          현재 <b>{farmers.toLocaleString('en-US')}명</b>의 농부가
+          사용중이에요!
+        </p>
+      )}
     </header>
   )
 }

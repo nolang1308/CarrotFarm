@@ -66,6 +66,24 @@
     line-height: 1.9;
     color: rgba(255, 253, 247, 0.75);
   }
+
+  // 농부 수: 크고 눈에 띄게
+  &__farmers {
+    margin-top: 26px;
+    padding: 12px 22px;
+    font-size: 19px;
+    color: $color-cream;
+    background: rgba(122, 83, 32, 0.35);
+    border: 2px solid $color-brown;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+    animation: bob 2.4s ease-in-out infinite;
+
+    b {
+      font-size: 26px;
+      color: $color-yellow;
+      text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+    }
+  }
 }
 
 @keyframes bob {

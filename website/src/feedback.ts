@@ -7,6 +7,25 @@
 const PROJECT = 'carrotfarm-game'
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`
 
+/** 지금까지 가입한 농부(사용자) 수 — leaderboard 문서 개수 집계 */
+export async function fetchFarmerCount(): Promise<number> {
+  const res = await fetch(`${BASE}:runAggregationQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredAggregationQuery: {
+        structuredQuery: { from: [{ collectionId: 'leaderboard' }] },
+        aggregations: [{ count: {}, alias: 'total' }],
+      },
+    }),
+  })
+  if (!res.ok) throw new Error(`농부 수 조회 실패 (${res.status})`)
+  const rows = (await res.json()) as Array<{
+    result?: { aggregateFields?: { total?: { integerValue?: string } } }
+  }>
+  return Number(rows[0]?.result?.aggregateFields?.total?.integerValue ?? 0)
+}
+
 export interface Feedback {
   name: string
   message: string

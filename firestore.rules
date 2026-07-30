@@ -7,9 +7,9 @@ service cloud.firestore {
     }
 
     // 랭킹: 공개 프로필(이름·코인)만 담는 컬렉션.
-    // 읽기는 로그인한 누구나, 쓰기는 본인 것만.
+    // 읽기는 공개(웹사이트의 농부 수 집계·랭킹 표시용), 쓰기는 본인 것만.
     match /leaderboard/{uid} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth != null && request.auth.uid == uid;
     }
 
