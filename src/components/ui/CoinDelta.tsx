@@ -4,18 +4,20 @@ import '../../styles/CoinDelta.scss'
 
 /** 변동(+/-) 표시가 떠 있는 시간(ms) */
 const DELTA_MS = 900
+/** 동시에 띄우는 최대 개수 (연타 폭주 대비) */
+const MAX_POPUPS = 20
 
 interface Popup {
+  id: number
   amount: number
   x: number
   y: number
-  key: number
 }
 
 /**
  * 코인 변동량(+획득/-지출)을 마우스 커서 바로 위에 띄우는 플로팅 표시.
- * 짧은 간격의 연속 변동(드래그 수확 등)은 하나로 합산되고,
- * 위치는 마지막 변동 시점의 커서를 따라간다. 렌더링 외 상호작용 없음.
+ * 변동 한 번 = 팝업 한 개. 연속 구매하면 -20, -20, -20 이 각각 떠올라서
+ * "이번에 나간 돈"이 그대로 보인다 (누적 합산 표시는 오해를 줘서 안 함).
  */
 export default function CoinDelta() {
   const coins = useGameStore((s) => s.coins)
@@ -24,8 +26,8 @@ export default function CoinDelta() {
     x: window.innerWidth / 2,
     y: window.innerHeight / 2,
   })
-  const timer = useRef(0)
-  const [popup, setPopup] = useState<Popup | null>(null)
+  const nextId = useRef(0)
+  const [popups, setPopups] = useState<Popup[]>([])
 
   // 커서 위치 추적
   useEffect(() => {
@@ -40,31 +42,33 @@ export default function CoinDelta() {
     }
   }, [])
 
-  // 코인 변동 감지 → 커서 위 팝업 (key 가 바뀌면 애니메이션 재시작)
+  // 코인 변동 감지 → 커서 위에 팝업 하나 추가, 수명이 다하면 제거
   useEffect(() => {
     const diff = coins - prevCoins.current
     prevCoins.current = coins
     if (diff === 0) return
-    setPopup((p) => ({
-      amount: (p?.amount ?? 0) + diff,
-      x: pointer.current.x,
-      y: pointer.current.y,
-      key: (p?.key ?? 0) + 1,
-    }))
-    window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(() => setPopup(null), DELTA_MS)
+    const id = nextId.current++
+    setPopups((list) => [
+      ...list.slice(-(MAX_POPUPS - 1)),
+      { id, amount: diff, x: pointer.current.x, y: pointer.current.y },
+    ])
+    window.setTimeout(() => {
+      setPopups((list) => list.filter((p) => p.id !== id))
+    }, DELTA_MS)
   }, [coins])
 
-  if (!popup) return null
-
   return (
-    <span
-      key={popup.key}
-      className={`coindelta ${popup.amount > 0 ? 'is-plus' : 'is-minus'}`}
-      style={{ left: popup.x, top: popup.y }}
-    >
-      {popup.amount > 0 ? '+' : ''}
-      {popup.amount.toLocaleString('en-US')}
-    </span>
+    <>
+      {popups.map((p) => (
+        <span
+          key={p.id}
+          className={`coindelta ${p.amount > 0 ? 'is-plus' : 'is-minus'}`}
+          style={{ left: p.x, top: p.y }}
+        >
+          {p.amount > 0 ? '+' : ''}
+          {p.amount.toLocaleString('en-US')}
+        </span>
+      ))}
+    </>
   )
 }
