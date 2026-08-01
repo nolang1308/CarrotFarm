@@ -21,6 +21,17 @@ body,
   background: transparent;
 }
 
+// Electron 이 아닌 환경(브라우저·모바일 앱): 하늘 + 잔디 배경
+body.web-bg {
+  background: linear-gradient(
+    180deg,
+    #87ceeb 0%,
+    #c8e8f4 58%,
+    #7cb342 58%,
+    #5e9331 100%
+  );
+}
+
 body {
   // 도트 테마: 픽셀 폰트 (한글 지원 Galmuri)
   font-family: 'Galmuri11', 'DungGeunMo', monospace;

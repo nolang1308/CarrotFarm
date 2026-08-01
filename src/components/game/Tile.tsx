@@ -25,11 +25,23 @@ export default function Tile({ tile, position, occupied = false }: TileProps) {
   const top = soilTopTexture()
   const side = soilSideTexture()
 
-  // 누르는 순간: 좌클릭=심기 / 우클릭=수확 + 각 드래그 시작
+  // 누르는 순간: 좌클릭=심기 / 우클릭=수확 + 각 드래그 시작.
+  // 터치(모바일)는 버튼이 없으므로 처음 누른 칸의 상태가 동작을 정한다:
+  // 빈 흙에서 시작 = 심기 드래그, 다 자란 당근에서 시작 = 수확 드래그
   const handleDown = (e: ThreeEvent<PointerEvent>) => {
     // 땅 추가 모드거나 건물이 점유한 칸이면 심기/수확 안 함
     if (buildMode || occupied) return
     e.stopPropagation()
+    if (e.pointerType === 'touch') {
+      if (tile.growth === 0) {
+        plantDrag.active = true
+        interactTile(tile.x, tile.z)
+      } else if (tile.growth === RIPE_STAGE) {
+        harvestDrag.active = true
+        interactTile(tile.x, tile.z)
+      }
+      return
+    }
     if (e.button === 2) {
       // 우클릭: 수확
       harvestDrag.active = true

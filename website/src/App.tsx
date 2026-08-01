@@ -3,6 +3,7 @@ import Features from './components/Features'
 import HowTo from './components/HowTo'
 import Download from './components/Download'
 import RankingBoard from './components/RankingBoard'
+import DexBoard from './components/DexBoard'
 import FeedbackBoard from './components/FeedbackBoard'
 import Footer from './components/Footer'
 import './styles/App.scss'
@@ -15,6 +16,7 @@ export default function App() {
       <Download />
       <RankingBoard />
       <Features />
+      <DexBoard />
       <HowTo />
       <FeedbackBoard />
       <Footer />

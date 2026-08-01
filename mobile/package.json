@@ -1,0 +1,19 @@
+{
+  "name": "carrot-farm-mobile",
+  "private": true,
+  "version": "0.0.1",
+  "description": "당근농장 모바일 (Capacitor 껍데기 — 게임 코드는 루트 src/ 공유)",
+  "scripts": {
+    "sync": "npm --prefix .. run build && cap sync",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}

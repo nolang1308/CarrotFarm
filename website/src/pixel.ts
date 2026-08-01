@@ -74,6 +74,8 @@ interface RabbitPalette {
   nose: string
   cheek: string
   ear: string
+  /** 종별 점무늬 (선택) */
+  spotColor?: string
 }
 
 const RABBIT: RabbitPalette = {
@@ -201,6 +203,11 @@ function drawRabbit(pc: PixelCanvas, c: RabbitPalette): void {
   // 볼
   dot(pc, 4, 10, c.cheek)
   dot(pc, 11, 10, c.cheek)
+  // 종별 점무늬 (게임 아이콘과 같은 고정 위치)
+  if (c.spotColor) {
+    dot(pc, 5, 7, c.spotColor)
+    dot(pc, 10, 12, c.spotColor)
+  }
 }
 
 /** 땅(밭) 블록: 잔디 덮인 흙 */
@@ -238,3 +245,18 @@ export const rabbitUrl = (): string =>
 export const blackRabbitUrl = (): string =>
   (_blackRabbit ??= buildUrl((pc) => drawRabbit(pc, BLACK_RABBIT)))
 export const landUrl = (): string => (_land ??= buildUrl(drawLand))
+
+// ===== 토끼 종 도감 (게임 소스의 종 데이터를 그대로 사용) =====
+import type { RabbitSpecies } from '../../src/game/rabbitSpecies'
+
+const _speciesUrls = new Map<string, string>()
+
+/** 종별 토끼 초상 (종 id 로 캐시) */
+export function rabbitUrlFor(sp: RabbitSpecies): string {
+  let url = _speciesUrls.get(sp.id)
+  if (!url) {
+    url = buildUrl((pc) => drawRabbit(pc, sp.palette))
+    _speciesUrls.set(sp.id, url)
+  }
+  return url
+}

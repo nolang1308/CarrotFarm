@@ -1,0 +1,73 @@
+@use './variables' as *;
+
+.dexboard {
+  width: 100%;
+  max-width: 960px;
+  padding: 40px 0;
+  text-align: center;
+
+  &__heading {
+    font-size: 26px;
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
+  }
+
+  &__sub {
+    margin: 10px 0 22px;
+    font-size: 13px;
+    color: rgba(255, 253, 247, 0.7);
+  }
+
+  &__group {
+    margin-bottom: 18px;
+  }
+
+  &__label {
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: $color-yellow;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 10px 12px;
+    background: $color-cream;
+    clip-path: $notch;
+    color: $color-text;
+
+    // 레어는 금테 느낌
+    &.is-rare {
+      background: #fff3cd;
+    }
+
+    img {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  &__name {
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  &__star {
+    margin-left: 3px;
+    color: #e0a92e;
+  }
+
+  &__desc {
+    font-size: 11px;
+    line-height: 1.6;
+    color: $color-text-dim;
+    word-break: keep-all;
+  }
+}

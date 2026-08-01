@@ -34,3 +34,9 @@ dist-tsnode
 
 # 서명·공증 자격증명
 .env.release
+
+# capacitor
+mobile/node_modules
+mobile/ios/App/Pods
+mobile/ios/App/App/public
+mobile/android/app/src/main/assets/public
