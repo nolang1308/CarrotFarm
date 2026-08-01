@@ -113,4 +113,13 @@ if (isFirebaseConfigured) {
   onAuthStateChanged(auth, (user) => {
     useAuthStore.setState({ user, initializing: false })
   })
+
+  // 안전장치: 어떤 환경 문제로든 콜백이 안 오면 "불러오는 중" 에 갇히지 않고
+  // 로그인 화면으로 넘어간다 (세션이 있었다면 이후 콜백이 와서 자동 입장)
+  window.setTimeout(() => {
+    if (useAuthStore.getState().initializing) {
+      console.warn('인증 초기화 지연 — 로그인 화면으로 전환')
+      useAuthStore.setState({ initializing: false })
+    }
+  }, 8000)
 }

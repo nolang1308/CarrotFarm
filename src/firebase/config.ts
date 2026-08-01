@@ -1,6 +1,10 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
-import { getAuth } from 'firebase/auth'
+import {
+  getAuth,
+  indexedDBLocalPersistence,
+  initializeAuth,
+} from 'firebase/auth'
 
 // 환경변수는 .env.local 에 채운다 (.env.example 참고)
 
@@ -20,4 +24,15 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
-export const auth = getAuth(app)
+
+/**
+ * Capacitor 네이티브 웹뷰(capacitor:// 등 비 http 스킴)에서는 getAuth 의
+ * 기본 초기화가 멈춰 버리는 문제가 있어, indexedDB 저장소로 명시 초기화한다.
+ */
+const isNativeShell =
+  typeof window !== 'undefined' &&
+  window.location.protocol.startsWith('capacitor')
+
+export const auth = isNativeShell
+  ? initializeAuth(app, { persistence: indexedDBLocalPersistence })
+  : getAuth(app)
